@@ -56,15 +56,27 @@ class AuthController extends Controller
 
     public function login(Request $request)
 {
+    // Validar las credenciales del usuario
     $credentials = $request->only('email', 'password');
-
+    
     if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
+        // Si el login es exitoso, obtener el rol del usuario
+        $role = Auth::user()->role->name;
 
-        return redirect()->route('hogar'); // Asegúrate de que esta ruta existe
+        // Redirigir según el rol
+        if ($role === 'Reciclador') {
+            return redirect()->route('reciclador.menu');
+        } elseif ($role === 'Administrador') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($role === 'Hogar') {
+            return redirect()->route('hogar');
+        } else {
+            return redirect()->route('hogar');
+        }
+   
+        // Si las credenciales no son correctas
+        return back()->withErrors(['email' => 'Credenciales inválidas']);
     }
-
-    return back()->with('error', 'Correo o contraseña incorrectos');
 }
 
 

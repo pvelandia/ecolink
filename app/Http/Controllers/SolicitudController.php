@@ -54,4 +54,26 @@ class SolicitudController extends Controller
         // Redirigir a la página de inicio con mensaje de éxito
         return redirect()->route('hogar')->with('success', '¡Recolección solicitada correctamente!');
     }
+
+    // Método para mostrar las solicitudes pendientes
+    public function index()
+{
+    // Obtener las solicitudes con estado '1' (pendiente) y cargar los materiales asociados
+    $solicitudes = Assignment::where('state_id', 1) // Asegúrate de que 'state_id' es el nombre correcto de la columna
+                                ->with('materials') // Relacionar los materiales
+                                ->get();
+
+    // Pasar la variable $solicitudes a la vista
+    return view('reciclador.solicitudes', compact('solicitudes'));
+}
+
+
+    // Método para ver los detalles de una solicitud
+    public function show($id)
+    {
+        // Buscar la solicitud por ID, asegurando que esté cargado el material
+        $solicitud = Assignment::with('materials')->findOrFail($id);
+
+        return view('reciclador.solicitudesDetalle', compact('solicitud'));
+    }
 }

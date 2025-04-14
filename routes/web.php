@@ -32,6 +32,30 @@ Route::get('/hogar', function () {
     return view('home');
 })->middleware('auth')->name('hogar');
 
+// Ruta para el menú del reciclador
+Route::get('/reciclador/menu', function () {
+    return view('reciclador.menu');
+})->middleware('auth')->name('reciclador.menu');
+
+// Ruta para las solicitudes del reciclador
+//Route::get('/reciclador/solicitudes', function () {
+  //  return view('reciclador.solicitudes'); // Esta es solo una demo, cambia según sea necesario
+//})->middleware('auth')->name('reciclador.solicitudes');
+
+Route::get('/reciclador/solicitudes', [SolicitudController::class, 'index'])->middleware('auth')->name('reciclador.solicitudes');
+
+Route::get('/reciclador/{id}/solicitudesDetalle', [SolicitudController::class, 'show'])->middleware('auth')->name('reciclador.solicitudesDetalle');
+
+// Ruta para las recolecciones pendientes
+Route::get('/reciclador/recolecciones/pendientes', function () {
+    return 'Vista de recolecciones pendientes'; // Cambiar según el controlador y la vista
+})->middleware('auth')->name('reciclador.recoleccionesPendientes');
+
+// Ruta para las recolecciones finalizadas
+Route::get('/reciclador/recolecciones/finalizadas', function () {
+    return 'Vista de recolecciones finalizadas'; // Cambiar según el controlador y la vista
+})->middleware('auth')->name('reciclador.recoleccionesFinalizadas');
+
 // Rutas para los botones del panel del hogar
 //Route::get('/solicitudes/crear', function () {
  //   return 'Vista para crear solicitud';
