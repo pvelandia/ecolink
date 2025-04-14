@@ -70,10 +70,32 @@ class SolicitudController extends Controller
 
     // Método para ver los detalles de una solicitud
     public function show($id)
-    {
-        // Buscar la solicitud por ID, asegurando que esté cargado el material
-        $solicitud = Assignment::with('materials')->findOrFail($id);
+{
+    // Solo necesitas cargar user y materials
+    $solicitud = Assignment::with(['user', 'materials'])->findOrFail($id);
 
-        return view('reciclador.solicitudesDetalle', compact('solicitud'));
-    }
+    return view('reciclador.solicitudesDetalle', compact('solicitud'));
+}
+public function aceptar($id)
+{
+    $solicitud = Assignment::findOrFail($id);
+    $solicitud->state_id = 2; // por ejemplo, 2 = aceptada
+    $solicitud->save();
+
+    return redirect()->route('reciclador.solicitudes')->with('success', 'Solicitud aceptada correctamente.');
+}
+
+public function rechazar($id)
+{
+    $solicitud = Assignment::findOrFail($id);
+    $solicitud->state_id = 3; // por ejemplo, 3 = rechazada
+    $solicitud->save();
+
+    return redirect()->route('reciclador.solicitudes')->with('error', 'Solicitud rechazada.');
+}
+
+
+    
+   
+
 }

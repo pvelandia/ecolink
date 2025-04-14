@@ -23,10 +23,12 @@ class Assignment extends Model
                     ->withTimestamps();
     }
     
-    public function person()
+
+    public function user()
     {
-        return $this->belongsTo(Person::class);
+        return $this->belongsTo(User::class, 'person_id');
     }
+
 
     public function state()
     {

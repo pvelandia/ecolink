@@ -1,80 +1,56 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SolicitudController;
-
 use App\Models\Role;
+use App\Http\Middleware\CheckRole;
 
 // Página de bienvenida
 Route::get('/', function () {
-    return view('welcome'); // Aquí pones la vista bonita de bienvenida
+    return view('welcome');
 })->middleware('guest')->name('welcome');
 
-// Mostrar formulario de login
-Route::get('/login', function () {
-    return view('auth.login'); // Vista de inicio de sesión
-})->middleware('guest')->name('login');
-
-// Mostrar formulario de registro
+// Login y Registro
+Route::get('/login', fn () => view('auth.login'))->middleware('guest')->name('login');
 Route::get('/register', function () {
-    $roles = Role::all(); // Obtener roles desde la base de datos
+    $roles = Role::all();
     return view('auth.register', compact('roles'));
 })->middleware('guest')->name('register');
 
-// Procesar formularios
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/register', [AuthController::class, 'register'])->middleware('guest')->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// Vista principal del hogar
-Route::get('/hogar', function () {
-    return view('home');
-})->middleware('auth')->name('hogar');
 
-// Ruta para el menú del reciclador
-Route::get('/reciclador/menu', function () {
-    return view('reciclador.menu');
-})->middleware('auth')->name('reciclador.menu');
+// RUTAS PARA ROL: hogar
+Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
-// Ruta para las solicitudes del reciclador
-//Route::get('/reciclador/solicitudes', function () {
-  //  return view('reciclador.solicitudes'); // Esta es solo una demo, cambia según sea necesario
-//})->middleware('auth')->name('reciclador.solicitudes');
+    Route::get('/hogar', fn () => view('home'))->name('hogar');
 
-Route::get('/reciclador/solicitudes', [SolicitudController::class, 'index'])->middleware('auth')->name('reciclador.solicitudes');
+    Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
+    Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
 
-Route::get('/reciclador/{id}/solicitudesDetalle', [SolicitudController::class, 'show'])->middleware('auth')->name('reciclador.solicitudesDetalle');
+    Route::get('/solicitudes', fn () => 'Vista de mis solicitudes')->name('solicitudes.index');
 
-// Ruta para las recolecciones pendientes
-Route::get('/reciclador/recolecciones/pendientes', function () {
-    return 'Vista de recolecciones pendientes'; // Cambiar según el controlador y la vista
-})->middleware('auth')->name('reciclador.recoleccionesPendientes');
+    Route::get('/educacion', fn () => 'Vista de educación ambiental')->name('educacion');
+    Route::get('/recolecciones/pendientes', fn () => 'Vista de reciclajes pendientes')->name('recolecciones.pendientes');
+    Route::get('/bonificaciones', fn () => 'Vista de bonificaciones')->name('bonificaciones.index');
 
-// Ruta para las recolecciones finalizadas
-Route::get('/reciclador/recolecciones/finalizadas', function () {
-    return 'Vista de recolecciones finalizadas'; // Cambiar según el controlador y la vista
-})->middleware('auth')->name('reciclador.recoleccionesFinalizadas');
+});
 
-// Rutas para los botones del panel del hogar
-//Route::get('/solicitudes/crear', function () {
- //   return 'Vista para crear solicitud';
-//})->middleware('auth')->name('solicitudes.create');
-Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->middleware('auth')->name('solicitudes.create');
-Route::post('/solicitudes', [SolicitudController::class, 'store'])->middleware('auth')->name('solicitudes.store');
 
-Route::get('/solicitudes', function () {
-    return 'Vista de mis solicitudes';
-})->middleware('auth')->name('solicitudes.index');
+// RUTAS PARA ROL: reciclador
+Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclador')->group(function () {
 
-Route::get('/educacion', function () {
-    return 'Vista de educación ambiental';
-})->middleware('auth')->name('educacion');
+    Route::get('/menu', fn () => view('reciclador.menu'))->name('reciclador.menu');
 
-Route::get('/recolecciones/pendientes', function () {
-    return 'Vista de reciclajes pendientes';
-})->middleware('auth')->name('recolecciones.pendientes');
+    Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('reciclador.solicitudes');
+    Route::get('/{id}/solicitudesDetalle', [SolicitudController::class, 'show'])->name('reciclador.solicitudesDetalle');
 
-Route::get('/bonificaciones', function () {
-    return 'Vista de bonificaciones';
-})->middleware('auth')->name('bonificaciones.index');
+    Route::put('/solicitudes/{id}/aceptar', [SolicitudController::class, 'aceptar'])->name('reciclador.solicitudes.aceptar');
+    Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar'])->name('reciclador.solicitudes.rechazar');
+
+    Route::get('/recolecciones/pendientes', fn () => 'Vista de recolecciones pendientes')->name('reciclador.recoleccionesPendientes');
+    Route::get('/recolecciones/finalizadas', fn () => 'Vista de recolecciones finalizadas')->name('reciclador.recoleccionesFinalizadas');
+
+});
