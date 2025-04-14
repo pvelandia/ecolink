@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class State extends Model
 {
     use HasFactory;
 
     protected $fillable = ['name'];
 
-    public function people()
+    public function assignments()
     {
-        return $this->hasMany(Person::class);
+        return $this->hasMany(Assignment::class);
     }
 }
