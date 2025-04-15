@@ -30,8 +30,8 @@
                 <a href="{{ route('hogar.educacion') }}" class="btn btn-secondary btn-lg">Educación Ambiental</a>
                 <a href="{{ route('hogar.recoleccionesPendientes') }}" class="btn btn-warning btn-lg text-white">Reciclajes Pendientes</a>
                 <a href="{{ route('hogar.recoleccionesFinalizadas') }}" class="btn btn-dark btn-lg text-white">Recolecciones Finalizadas</a> <!-- Aquí está el nuevo botón -->
-                <a href="{{ route('bonificaciones.index') }}" class="btn btn-success btn-lg">Bonificaciones</a>
-            </div>
+                <a href="{{ route('hogar.bonificacion') }}" class="btn btn-success btn-lg">Bonificaciones</a>
+                
         </div>
     </div>
 

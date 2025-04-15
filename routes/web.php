@@ -3,6 +3,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\RecoleccionesController;
+use App\Http\Controllers\BonificacionController;
+
+
 use App\Models\Role;
 use App\Http\Middleware\CheckRole;
 
@@ -50,7 +53,13 @@ Route::post('/hogar/recoleccionesPendientes/{id}/finalizar', [RecoleccionesContr
 
 Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');
 
-Route::get('/bonificaciones', fn () => 'Vista de bonificaciones')->name('bonificaciones.index');
+
+
+// Ruta para mostrar las bonificaciones
+Route::get('/hogar/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');
+
+// Ruta para canjear un cupón
+Route::post('/bonificacion/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
 
 });
 

@@ -5,13 +5,6 @@
 <div class="container py-5">
     <h2 class="text-center">Recolecciones Finalizadas</h2>
 
-    <!-- Mostrar puntos acumulados -->
-    <div class="mb-4">
-        <h4>Puntos: 
-            {{ $puntos ?? 'No tienes puntos acumulados.' }}
-        </h4>
-    </div>
-
     @if($recolecciones->isEmpty())
         <p>No hay recolecciones finalizadas.</p>
     @else
@@ -22,6 +15,7 @@
                     <th>Reciclador</th>
                     <th>Materiales Recolectados</th>
                     <th>Calificación</th>
+                    <th>Puntos</th> <!-- Nueva columna para los puntos -->
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +31,7 @@
                         </ul>
                     </td>
                     <td>{{ $recoleccion->rating ?? 'No Calificado' }}</td>
+                    <td>{{ $recoleccion->points ?? 'No Asignados' }}</td> <!-- Mostrar los puntos -->
                 </tr>
                 @endforeach
             </tbody>

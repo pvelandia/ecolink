@@ -10,9 +10,4 @@ class Coupon extends Model
     use HasFactory;
 
     protected $fillable = ['company', 'description', 'discount', 'stock', 'points'];
-
-    public function people()
-    {
-        return $this->hasMany(Person::class);
-    }
 }
