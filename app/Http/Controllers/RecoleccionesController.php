@@ -45,7 +45,20 @@ class RecoleccionesController extends Controller
         // Redirigir a la página de recolecciones
         return redirect()->route('hogar.recoleccionesPendientes')->with('success', 'Recolección finalizada y calificada.');
     }
-    
+    public function finalizadas()
+{
+    // Obtener las recolecciones con estado 4 (Finalizadas)
+    $recolecciones = Assignment::where('state_id', 4)  // Solo recolecciones finalizadas
+        ->orderBy('assignment_date', 'asc')  // Ordenarlas por fecha
+        ->get();
+
+    // Obtener los puntos del usuario autenticado
+    $puntos = auth()->user()->bonuses;  // Obtiene todos los bonus del usuario actual
+
+    // Pasar las recolecciones y los puntos a la vista
+    return view('hogar.recoleccionesFinalizadas', compact('recolecciones', 'puntos'));
+}
+
 
 
 

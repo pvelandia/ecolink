@@ -9,7 +9,7 @@ class Coupon extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['company', 'description', 'discount', 'stock'];
+    protected $fillable = ['company', 'description', 'discount', 'stock', 'points'];
 
     public function people()
     {

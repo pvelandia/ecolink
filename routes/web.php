@@ -48,6 +48,8 @@ Route::post('/hogar/recoleccionesPendientes/{id}/calificar', [RecoleccionesContr
 
 Route::post('/hogar/recoleccionesPendientes/{id}/finalizar', [RecoleccionesController::class, 'finalizar'])->name('recolecciones.finalizar');
 
+Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');
+
 Route::get('/bonificaciones', fn () => 'Vista de bonificaciones')->name('bonificaciones.index');
 
 });
