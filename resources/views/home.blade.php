@@ -26,9 +26,9 @@
 
             <div class="d-grid gap-3 col-8 mx-auto">
                 <a href="{{ route('solicitudes.create') }}" class="btn btn-primary btn-lg">Solicitar Recolección</a>
-                <a href="{{ route('solicitudes.index') }}" class="btn btn-info btn-lg text-white">Mis Solicitudes</a>
-                <a href="{{ route('educacion') }}" class="btn btn-secondary btn-lg">Educación Ambiental</a>
-                <a href="{{ route('recolecciones.pendientes') }}" class="btn btn-warning btn-lg text-white">Reciclajes Pendientes</a>
+                <a href="{{ route('hogar.solicitudes') }}" class="btn btn-info btn-lg text-white">Mis Solicitudes</a>
+                <a href="{{ route('hogar.educacion') }}" class="btn btn-secondary btn-lg">Educación Ambiental</a>
+                <a href="{{ route('hogar.recoleccionesPendientes') }}" class="btn btn-warning btn-lg text-white">Reciclajes Pendientes</a>
                 <a href="{{ route('bonificaciones.index') }}" class="btn btn-success btn-lg">Bonificaciones</a>
             </div>
         </div>

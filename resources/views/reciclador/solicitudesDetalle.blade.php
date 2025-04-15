@@ -5,19 +5,19 @@
     <h2 class="mb-4">Detalles de la Solicitud #{{ $solicitud->id }}</h2>
 
     <div class="card p-4 shadow-sm">
-        @if($solicitud->user)
-            <p><strong>Solicitante:</strong> {{ $solicitud->user->first_name }} {{ $solicitud->user->last_name }}</p>
+        @if($solicitud->hogar)
+            <p><strong>Solicitante:</strong> {{ $solicitud->hogar->first_name }} {{ $solicitud->hogar->last_name }}</p>
 
-            @if($solicitud->user->average)
+            @if($solicitud->hogar->average)
                 <p><strong>Calificación:</strong>
                     @for ($i = 1; $i <= 5; $i++)
-                        @if($i <= $solicitud->user->average)
+                        @if($i <= $solicitud->hogar->average)
                             ⭐
                         @else
                             ☆
                         @endif
                     @endfor
-                    ({{ $solicitud->user->average }} / 5)
+                    ({{ $solicitud->hogar->average }} / 5)
                 </p>
             @else
                 <p><strong>Calificación:</strong> No calificado aún</p>
@@ -43,11 +43,7 @@
                 <button type="submit" class="btn btn-success">Aceptar Solicitud</button>
             </form>
 
-            <form action="{{ route('reciclador.solicitudes.rechazar', $solicitud->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <button type="submit" class="btn btn-danger">Rechazar Solicitud</button>
-            </form>
+           
 
             <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-secondary">Volver</a>
         </div>

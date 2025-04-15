@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\RecoleccionesController;
 use App\Models\Role;
 use App\Http\Middleware\CheckRole;
 
@@ -29,12 +30,25 @@ Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
     Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
     Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
+    Route::get('/hogar/solicitudes/create', [SolicitudController::class, 'create'])->name('hogar.solicitudes.create');
 
-    Route::get('/solicitudes', fn () => 'Vista de mis solicitudes')->name('solicitudes.index');
 
-    Route::get('/educacion', fn () => 'Vista de educación ambiental')->name('educacion');
-    Route::get('/recolecciones/pendientes', fn () => 'Vista de reciclajes pendientes')->name('recolecciones.pendientes');
-    Route::get('/bonificaciones', fn () => 'Vista de bonificaciones')->name('bonificaciones.index');
+    Route::get('/hogar/solicitudes', [SolicitudController::class, 'misSolicitudes'])->name('hogar.solicitudes');
+    Route::put('/solicitudes/{id}/aprobar', [SolicitudController::class, 'aprobar'])->name('hogar.solicitudes.aprobar');
+    Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar'])->name('hogar.solicitudes.rechazar');
+    
+   
+    Route::get('/hogar/educacion', function () {
+        return view('hogar.educacion');
+    })->name('hogar.educacion');
+    
+    Route::get('/hogar/recoleccionesPendientes', [RecoleccionesController::class, 'index'])->name('hogar.recoleccionesPendientes');
+
+Route::post('/hogar/recoleccionesPendientes/{id}/calificar', [RecoleccionesController::class, 'calificar'])->name('recolecciones.calificar');
+
+Route::post('/hogar/recoleccionesPendientes/{id}/finalizar', [RecoleccionesController::class, 'finalizar'])->name('recolecciones.finalizar');
+
+Route::get('/bonificaciones', fn () => 'Vista de bonificaciones')->name('bonificaciones.index');
 
 });
 
@@ -49,8 +63,8 @@ Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclado
 
     Route::put('/solicitudes/{id}/aceptar', [SolicitudController::class, 'aceptar'])->name('reciclador.solicitudes.aceptar');
     Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar'])->name('reciclador.solicitudes.rechazar');
-
     Route::get('/recolecciones/pendientes', fn () => 'Vista de recolecciones pendientes')->name('reciclador.recoleccionesPendientes');
     Route::get('/recolecciones/finalizadas', fn () => 'Vista de recolecciones finalizadas')->name('reciclador.recoleccionesFinalizadas');
 
+ 
 });

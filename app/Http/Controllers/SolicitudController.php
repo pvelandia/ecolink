@@ -71,28 +71,50 @@ class SolicitudController extends Controller
     // Método para ver los detalles de una solicitud
     public function show($id)
 {
-    // Solo necesitas cargar user y materials
-    $solicitud = Assignment::with(['user', 'materials'])->findOrFail($id);
+    // Asegúrate de cargar las relaciones 'hogar' y 'materials' cuando traes la solicitud
+    $solicitud = Assignment::with(['hogar', 'materials'])->findOrFail($id);
 
+    // Retorna la vista con la solicitud cargada
     return view('reciclador.solicitudesDetalle', compact('solicitud'));
 }
 public function aceptar($id)
 {
     $solicitud = Assignment::findOrFail($id);
-    $solicitud->state_id = 2; // por ejemplo, 2 = aceptada
+    $solicitud->recycler_id = auth()->id(); // ID del reciclador autenticado
+    $solicitud->state_id = 2;
     $solicitud->save();
 
     return redirect()->route('reciclador.solicitudes')->with('success', 'Solicitud aceptada correctamente.');
 }
+public function misSolicitudes()
+{
+    $hogar = auth()->user(); // El hogar es el usuario logueado
+    $solicitudes = Assignment::where('person_id', $hogar->id)
+                             ->where('state_id', 2) // Filtramos las solicitudes en estado aceptada
+                             ->with(['reciclador', 'materials']) // Cargamos la relación con reciclador y materiales
+                             ->get();
+
+    return view('hogar.solicitudes', compact('solicitudes'));
+}
+public function aprobar($id)
+{
+    $solicitud = Assignment::find($id);
+    $solicitud->state_id = 3; // 3 es el estado 'Aprobado'
+    $solicitud->save();
+
+    return redirect()->route('hogar.solicitudes');
+}
 
 public function rechazar($id)
 {
-    $solicitud = Assignment::findOrFail($id);
-    $solicitud->state_id = 3; // por ejemplo, 3 = rechazada
+    $solicitud = Assignment::find($id);
+    $solicitud->state_id = 1; // 1 es el estado 'Pendiente'
+    $solicitud->recycler_id = null; // Borra el ID del reciclador
     $solicitud->save();
 
-    return redirect()->route('reciclador.solicitudes')->with('error', 'Solicitud rechazada.');
+    return redirect()->route('hogar.solicitudes');
 }
+
 
 
     

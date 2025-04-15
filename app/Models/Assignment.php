@@ -7,27 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'person_id',
-        'state_id',
+        'hogar_id',
+        'reciclador_id',
         'assignment_date',
-        'address',
-        'rating',
+        'status', // si tienes estado
     ];
-    public function materials()
-    {
-        return $this->belongsToMany(Material::class, 'assignment_materials')
-                    ->withPivot('quantity')
-                    ->withTimestamps();
-    }
-    
 
-    public function user()
+    // Relación con el hogar (solicitante)
+    public function hogar()
     {
         return $this->belongsTo(User::class, 'person_id');
     }
+
+    // Relación con el reciclador (quien acepta)
+    public function reciclador()
+    {
+        return $this->belongsTo(User::class, 'recycler_id');
+    }
+
+    // Si hay una relación con materiales:
+    public function materials()
+{
+    return $this->belongsToMany(Material::class, 'assignment_materials')->withPivot('quantity');
+}
 
 
     public function state()
