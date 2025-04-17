@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Assignment;
 use App\Models\Material;
@@ -14,7 +14,7 @@ class SolicitudController extends Controller
         $materials = Material::all();
         return view('solicitudes.create', compact('materials'));
     }
-
+    
     public function store(Request $request)
     {
         // Validación de los datos
@@ -52,72 +52,147 @@ class SolicitudController extends Controller
         }
 
         // Redirigir a la página de inicio con mensaje de éxito
-        return redirect()->route('hogar')->with('success', '¡Recolección solicitada correctamente!');
+        return redirect()->route('hogar.home')->with('success', '¡Recolección solicitada correctamente!');
     }
-
-    // Método para mostrar las solicitudes pendientes
+    // Método para mostrar las solicitudes pendientes reciclador
     public function index()
-{
-    // Obtener las solicitudes con estado '1' (pendiente) y cargar los materiales asociados
-    $solicitudes = Assignment::where('state_id', 1) // Asegúrate de que 'state_id' es el nombre correcto de la columna
-                                ->with('materials') // Relacionar los materiales
-                                ->get();
-
-    // Pasar la variable $solicitudes a la vista
-    return view('reciclador.solicitudes', compact('solicitudes'));
-}
-
+    {
+        // Obtener las solicitudes con estado '1' (pendiente) y cargar los materiales asociados
+        $solicitudes = Assignment::where('state_id', 1) 
+                                    ->with('materials') 
+                                    ->get();
+        return view('reciclador.solicitudes', compact('solicitudes'));
+    }
 
     // Método para ver los detalles de una solicitud
     public function show($id)
-{
-    // Asegúrate de cargar las relaciones 'hogar' y 'materials' cuando traes la solicitud
-    $solicitud = Assignment::with(['hogar', 'materials'])->findOrFail($id);
+    {
+        // Asegúrate de cargar las relaciones 'hogar' y 'materials' cuando traes la solicitud
+        $solicitud = Assignment::with(['hogar', 'materials'])->findOrFail($id);
 
-    // Retorna la vista con la solicitud cargada
-    return view('reciclador.solicitudesDetalle', compact('solicitud'));
-}
-public function aceptar($id)
-{
-    $solicitud = Assignment::findOrFail($id);
-    $solicitud->recycler_id = auth()->id(); // ID del reciclador autenticado
-    $solicitud->state_id = 2;
-    $solicitud->save();
+        // Retorna la vista con la solicitud cargada
+        return view('reciclador.solicitudesDetalle', compact('solicitud'));
+    }
 
-    return redirect()->route('reciclador.solicitudes')->with('success', 'Solicitud aceptada correctamente.');
-}
-public function misSolicitudes()
-{
-    $hogar = auth()->user(); // El hogar es el usuario logueado
-    $solicitudes = Assignment::where('person_id', $hogar->id)
-                             ->where('state_id', 2) // Filtramos las solicitudes en estado aceptada
-                             ->with(['reciclador', 'materials']) // Cargamos la relación con reciclador y materiales
-                             ->get();
+    public function misSolicitudes()
+    {
+        $hogar = auth()->user(); // El hogar es el usuario logueado
+        $solicitudes = Assignment::where('person_id', $hogar->id)
+                                ->where('state_id', 2) // Filtramos las solicitudes en estado aceptada
+                                ->with(['reciclador', 'materials']) // Cargamos la relación con reciclador y materiales
+                                ->get();
+        return view('hogar.solicitudes', compact('solicitudes'));
+    }
 
-    return view('hogar.solicitudes', compact('solicitudes'));
-}
-public function aprobar($id)
-{
-    $solicitud = Assignment::find($id);
-    $solicitud->state_id = 3; // 3 es el estado 'Aprobado'
-    $solicitud->save();
-
-    return redirect()->route('hogar.solicitudes');
-}
-
-public function rechazar($id)
-{
-    $solicitud = Assignment::find($id);
-    $solicitud->state_id = 1; // 1 es el estado 'Pendiente'
-    $solicitud->recycler_id = null; // Borra el ID del reciclador
-    $solicitud->save();
-
-    return redirect()->route('hogar.solicitudes');
-}
-
-
-
+    public function misSolicitudesAceptadas()
+    {
+        $reciclador = auth()->user(); 
+        // Obtener las asignaciones con estado 'aceptada' (suponiendo que 'state_id' = 2 es el estado aceptado)
+        $asignaciones = Assignment::where('recycler_id', $reciclador->id)
+                                    ->where('state_id', 2) // Solicitudes aceptadas
+                                    ->with('hogar', 'materials') // Cargar la relación 'person' y 'materials'
+                                    ->get();
     
-   
+        return view('reciclador.recoleccionesAceptadas', compact('asignaciones'));
+    }
+    
+    public function recoleccionesFinalizadas()
+    {
+        $reciclador = auth()->user();
+    
+        $asignaciones = Assignment::where('recycler_id', $reciclador->id)
+                                  ->where('state_id', 4) // Estado 'finalizado'
+                                  ->with('hogar', 'materials')
+                                  ->get();
+    
+        return view('reciclador.recoleccionesFinalizadas', compact('asignaciones'));
+    }
 
+    public function asignarPuntos(Request $request, $id)
+    {
+        $asignacion = Assignment::findOrFail($id);
+        
+        // Verificamos si ya se asignaron puntos
+        if ($asignacion->points > 0) {
+            return redirect()->route('reciclador.recoleccionesFinalizadas')->with('error', 'Ya se han asignado puntos a esta solicitud.');
+        }
+    
+        // Validamos que los puntos estén entre 0 y 50
+        $validatedData = $request->validate([
+            'puntos' => 'required|integer|min:0|max:50',
+        ]);
+        
+        $puntosAsignados = $validatedData['puntos'];
+    
+        // Actualizamos los puntos de la asignación
+        $asignacion->points = $puntosAsignados;
+        $asignacion->save();
+    
+        // Actualizamos los puntos en la tabla 'people' sumando los puntos de todas las asignaciones
+        $hogar = $asignacion->hogar;  // El hogar o persona asociada a esta asignación
+    
+        // Sumamos los puntos de esta asignación a los puntos acumulados en la tabla 'people'
+        $hogar->points += $puntosAsignados;
+        $hogar->save();
+    
+        return redirect()->route('reciclador.recoleccionesFinalizadas')->with('success', 'Puntos asignados con éxito.');
+    }    
+    
+    
+    public function cancelarSolicitud($id)
+    {
+        $asignacion = Assignment::findOrFail($id);
+    
+        // Verifica que el reciclador actual sea el asignado
+        if ($asignacion->recycler_id != auth()->user()->id) {
+            return redirect()->route('reciclador.recoleccionesAceptadas')
+                             ->with('error', 'No tienes permiso para cancelar esta solicitud.');
+        }
+    
+        // Cambiar estado a pendiente y eliminar reciclador asignado
+        $asignacion->state_id = 1;
+        $asignacion->recycler_id = null;
+        $asignacion->save();
+    
+        return redirect()->route('reciclador.recoleccionesAceptadas')
+                         ->with('success', 'Solicitud cancelada con éxito.');
+    }
+
+    public function solicitudesPendientes()
+    {
+        $hogar = auth()->user();
+        $solicitudes = Assignment::where('person_id', $hogar->id)
+                        ->where('state_id', 1)
+                        ->with('materials')
+                        ->get();
+        return view('hogar.solicitudesPendientes', compact('solicitudes'));
+    }
+
+    public function aceptar($id)
+    {
+        $solicitud = Assignment::findOrFail($id);
+        $solicitud->recycler_id = auth()->id(); // ID del reciclador autenticado
+        $solicitud->state_id = 2;
+        $solicitud->save();
+
+        return redirect()->route('reciclador.solicitudes')->with('success', 'Solicitud aceptada correctamente.');
+    }
+
+    public function aprobar($id)
+    {
+        $solicitud = Assignment::find($id);
+        $solicitud->state_id = 3; // 3 es el estado 'Aprobado'
+        $solicitud->save();
+
+        return redirect()->route('hogar.solicitudes');
+    }
+
+    public function rechazar($id)
+    {
+        $solicitud = Assignment::find($id);
+        $solicitud->state_id = 1; // 1 es el estado 'Pendiente'
+        $solicitud->recycler_id = null; // Borra el ID del reciclador
+        $solicitud->save();
+        return redirect()->route('hogar.solicitudes');
+    }
 }

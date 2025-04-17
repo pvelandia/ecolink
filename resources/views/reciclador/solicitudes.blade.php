@@ -41,5 +41,6 @@
             </tbody>
         </table>
     @endif
+    <a href="{{ route('reciclador.menu') }}" class="btn btn-secondary mt-3">Volver</a>
 </div>
 @endsection

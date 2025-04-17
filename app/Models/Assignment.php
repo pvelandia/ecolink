@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Assignment extends Model
 {
     protected $fillable = [
-        'hogar_id',
-        'reciclador_id',
+        'person_id',
+        'recycler_id',
         'assignment_date',
-        'status', // si tienes estado
-    ];
+        'address',
+        'state_id', // si tienes estado
+    ];    
 
     // Relación con el hogar (solicitante)
     public function hogar()
@@ -28,10 +29,9 @@ class Assignment extends Model
 
     // Si hay una relación con materiales:
     public function materials()
-{
-    return $this->belongsToMany(Material::class, 'assignment_materials')->withPivot('quantity');
-}
-
+    {
+        return $this->belongsToMany(Material::class, 'assignment_materials')->withPivot('quantity');
+    }
 
     public function state()
     {

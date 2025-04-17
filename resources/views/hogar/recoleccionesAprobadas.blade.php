@@ -2,10 +2,10 @@
 
 @section('content')
 <div class="container py-5">
-    <h2 class="text-center">Recolecciones Pendientes</h2>
+    <h2 class="text-center">Recolecciones Aprobadas</h2>
 
     @if($recolecciones->isEmpty())
-        <p>No hay recolecciones pendientes para calificar o finalizar.</p>
+        <p>No hay recolecciones aprobadas para calificar o finalizar.</p>
     @else
         <table class="table table-bordered">
             <thead>
@@ -51,5 +51,6 @@
             </tbody>
         </table>
     @endif
+    <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
 </div>
 @endsection

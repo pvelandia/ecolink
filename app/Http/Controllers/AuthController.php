@@ -55,29 +55,28 @@ class AuthController extends Controller
     
 
     public function login(Request $request)
-{
-    // Validar las credenciales del usuario
-    $credentials = $request->only('email', 'password');
-    
-    if (Auth::attempt($credentials)) {
-        // Si el login es exitoso, obtener el rol del usuario
-        $role = Auth::user()->role->name;
+    {
+        // Validar las credenciales del usuario
+        $credentials = $request->only('email', 'password');
+        
+        if (Auth::attempt($credentials)) {
+            // Si el login es exitoso, obtener el rol del usuario
+            $role = Auth::user()->role->name;
 
-        // Redirigir según el rol
-        if ($role === 'Reciclador') {
-            return redirect()->route('reciclador.menu');
-        } elseif ($role === 'Administrador') {
-            return redirect()->route('admin.dashboard');
-        } elseif ($role === 'Hogar') {
-            return redirect()->route('hogar');
-        } else {
-            return redirect()->route('hogar');
+            // Redirigir según el rol
+            if ($role === 'Reciclador') {
+                return redirect()->route('reciclador.menu');
+            } elseif ($role === 'Administrador') {
+                return redirect()->route('admin.dashboard');
+            } elseif ($role === 'Hogar') {
+                return redirect()->route('hogar.home');
+            } else {
+                return redirect()->route('hogar.home');
+            }
+            // Si las credenciales no son correctas
+            return back()->withErrors(['email' => 'Credenciales inválidas']);
         }
-   
-        // Si las credenciales no son correctas
-        return back()->withErrors(['email' => 'Credenciales inválidas']);
     }
-}
 
 
     public function logout()

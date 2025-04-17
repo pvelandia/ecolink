@@ -42,15 +42,15 @@
 
         <!-- Campos para la dirección -->
         <div class="mb-3">
-            <label>Dirección (Parte 1)</label>
+            <label>Dirección</label>
             <input type="text" name="address_part1" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label>Dirección (Parte 2 - Número)</label>
+            <label>Barrio</label>
             <input type="text" name="address_part2" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label>Dirección (Parte 3 - Opcional)</label>
+            <label>Indicacion adicional (opcional)</label>
             <input type="text" name="address_part3" class="form-control">
         </div>
 
@@ -60,15 +60,10 @@
             <input type="datetime-local" name="collection_date" class="form-control" required>
         </div>
 
-        <div class="mb-3">
-            <label>Observaciones (opcional)</label>
-            <textarea name="observation" class="form-control" rows="3"></textarea>
-        </div>
-
         <button type="submit" class="btn btn-primary">Enviar solicitud</button>
     </form>
+    <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
 </div>
-
 <script>
     let materialIndex = 1;
 

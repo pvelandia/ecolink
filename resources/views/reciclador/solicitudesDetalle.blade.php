@@ -42,9 +42,6 @@
                 @method('PUT')
                 <button type="submit" class="btn btn-success">Aceptar Solicitud</button>
             </form>
-
-           
-
             <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-secondary">Volver</a>
         </div>
     </div>

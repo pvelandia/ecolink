@@ -29,38 +29,30 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // RUTAS PARA ROL: hogar
 Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
-    Route::get('/hogar', fn () => view('home'))->name('hogar');
-
+    Route::get('/hogar', fn () => view('hogar.home'))->name('hogar.home');
     Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
+
+    Route::get('/solicitudesPendientes', [SolicitudController::class, 'solicitudesPendientes'])->name('hogar.solicitudesPendientes');   
+
     Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
     Route::get('/hogar/solicitudes/create', [SolicitudController::class, 'create'])->name('hogar.solicitudes.create');
 
-
     Route::get('/hogar/solicitudes', [SolicitudController::class, 'misSolicitudes'])->name('hogar.solicitudes');
+
     Route::put('/solicitudes/{id}/aprobar', [SolicitudController::class, 'aprobar'])->name('hogar.solicitudes.aprobar');
     Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar'])->name('hogar.solicitudes.rechazar');
-    
-   
-    Route::get('/hogar/educacion', function () {
-        return view('hogar.educacion');
-    })->name('hogar.educacion');
-    
-    Route::get('/hogar/recoleccionesPendientes', [RecoleccionesController::class, 'index'])->name('hogar.recoleccionesPendientes');
 
-Route::post('/hogar/recoleccionesPendientes/{id}/calificar', [RecoleccionesController::class, 'calificar'])->name('recolecciones.calificar');
+    Route::get('/hogar/educacion', function () { return view('hogar.educacion'); })->name('hogar.educacion');
 
-Route::post('/hogar/recoleccionesPendientes/{id}/finalizar', [RecoleccionesController::class, 'finalizar'])->name('recolecciones.finalizar');
+    Route::get('/hogar/recoleccionesAprobadas', [RecoleccionesController::class, 'recoleccionesAprobadas'])->name('hogar.recoleccionesAprobadas');
 
-Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');
+    Route::post('/hogar/recoleccionesAprobadas/{id}/calificar', [RecoleccionesController::class, 'calificar'])->name('recolecciones.calificar');
+    Route::post('/hogar/recoleccionesAprobadas/{id}/finalizar', [RecoleccionesController::class, 'finalizar'])->name('recolecciones.finalizar');
 
+    Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');   
 
-
-// Ruta para mostrar las bonificaciones
-Route::get('/hogar/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');
-
-// Ruta para canjear un cupón
-Route::post('/bonificacion/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
-
+    Route::get('/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');   
+    Route::post('/bonificacion/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
 });
 
 
@@ -71,11 +63,14 @@ Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclado
 
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('reciclador.solicitudes');
     Route::get('/{id}/solicitudesDetalle', [SolicitudController::class, 'show'])->name('reciclador.solicitudesDetalle');
-
     Route::put('/solicitudes/{id}/aceptar', [SolicitudController::class, 'aceptar'])->name('reciclador.solicitudes.aceptar');
     Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar'])->name('reciclador.solicitudes.rechazar');
-    Route::get('/recolecciones/pendientes', fn () => 'Vista de recolecciones pendientes')->name('reciclador.recoleccionesPendientes');
-    Route::get('/recolecciones/finalizadas', fn () => 'Vista de recolecciones finalizadas')->name('reciclador.recoleccionesFinalizadas');
 
- 
+    Route::get('/reciclador/recoleccionesAceptadas', [SolicitudController::class, 'misSolicitudesAceptadas'])->name('reciclador.recoleccionesAceptadas');
+    Route::put('/reciclador/cancelar-solicitud/{id}', [SolicitudController::class, 'cancelarSolicitud'])->name('reciclador.cancelar.solicitud');
+
+    Route::get('/reciclador/recoleccionesFinalizadas', [SolicitudController::class, 'recoleccionesFinalizadas'])->name('reciclador.recoleccionesFinalizadas');
+    Route::post('/reciclador/asignar-puntos/{id}', [SolicitudController::class, 'asignarPuntos'])->name('reciclador.asignarPuntos');
+
+
 });

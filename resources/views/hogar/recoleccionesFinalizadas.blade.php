@@ -37,5 +37,6 @@
             </tbody>
         </table>
     @endif
+    <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
 </div>
 @endsection

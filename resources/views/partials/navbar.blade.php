@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ route('hogar') }}">
+        <a class="navbar-brand fw-bold" href="{{ route('welcome') }}">
             ♻️ EcoLink
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -9,9 +9,6 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                 @auth
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('hogar') }}">Inicio</a>
-                    </li>
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

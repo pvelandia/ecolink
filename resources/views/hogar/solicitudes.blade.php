@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-<!DOCTYPE html>
-<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Solicitudes Aceptadas</title>
@@ -42,9 +40,6 @@
 
     <div class="container py-5">
         <h2 class="header-title text-center">Solicitudes Aceptadas</h2>
-
-        <a href="{{ route('hogar.solicitudes') }}" class="btn btn-info btn-lg text-white mb-4">Volver a Mis Solicitudes</a>
-
         @if($solicitudes->isEmpty())
             <div class="alert alert-info text-center">
                 No tienes solicitudes aceptadas en este momento.
@@ -99,13 +94,12 @@
                     </div>
                 </div>
             @endforeach
+            <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
         @endif
     </div>
-
     <!-- Bootstrap JS & Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
 </body>
-</html>
 @endsection

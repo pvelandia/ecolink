@@ -41,11 +41,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
-// En el modelo User.php
-public function bonuses()
-{
-    return $this->hasMany(Bonus::class);
-}
+
+    public function bonuses()
+    {
+        return $this->hasMany(Bonus::class);
+    }
 
     public function coupon()
     {
