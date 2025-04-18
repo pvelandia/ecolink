@@ -38,27 +38,35 @@
             </div>
         @else
             @foreach($solicitudes as $solicitud)
-                    <div class="card">
-                        <h5 class="mb-3">Solicitud #{{ $solicitud->id }}</h5>
-                        <p><span class="info-label">Dirección:</span> {{ $solicitud->address }}</p>
-                        <p><span class="info-label">Fecha de Solicitud:</span> {{ \Carbon\Carbon::parse($solicitud->created_at)->format('d/m/Y') }}</p>
-                        <p><span class="info-label">Estado:</span> Pendiente</p>
-                        <p><span class="info-label">Materiales:</span></p>
-                        <ul>
-                            @foreach($solicitud->materials as $material)
-                                <li>{{ $material->name }} (Cantidad: {{ $material->pivot->quantity }})</li>
-                            @endforeach
-                        </ul>
-                    </div>
-            @endforeach
+                <div class="card">
+                    <h5 class="mb-3">Solicitud #{{ $solicitud->id }}</h5>
+                    <p><span class="info-label">Dirección:</span> {{ $solicitud->address ?? 'Ninguna' }}</p>
+                    <p><span class="info-label">Fecha de Solicitud:</span> {{ \Carbon\Carbon::parse($solicitud->created_at)->format('d/m/Y') }}</p>
+                    <p><span class="info-label">Estado:</span> Pendiente</p>
+                    <p><span class="info-label">Materiales:</span></p>
+                    <ul>
+                        @foreach($solicitud->materials as $material)
+                            <li>{{ $material->name }} (Cantidad: {{ $material->pivot->quantity }})</li>
+                        @endforeach
+                    </ul>
 
-            <div class="text-center">
-                <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
-            </div>
+                    {{-- Botón de eliminar --}}
+                    <form action="{{ route('hogar.eliminarSolicitud', $solicitud->id) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres eliminar esta solicitud?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger mt-2">Eliminar Solicitud</button>
+                    </form>
+                </div>
+            @endforeach
         @endif
+        <div class="text-center">
+                <a href="{{ route('solicitudes.create') }}" class="btn btn-secondary mt-3">¡Crea una nueva!</a>
+        </div>
+        <div class="text-center">
+                <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </body>
 @endsection

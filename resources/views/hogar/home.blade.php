@@ -28,8 +28,8 @@
                 <a href="{{ route('solicitudes.create') }}" class="btn btn-primary btn-lg">Solicitar Recolección</a>
                 <a href="{{ route('hogar.solicitudesPendientes') }}" class="btn btn-primary btn-lg">Solicitudes Pendientes</a>
 
-                <a href="{{ route('hogar.solicitudes') }}" class="btn btn-info btn-lg text-white">Recolecciones Aceptadas</a>
-                <a href="{{ route('hogar.recoleccionesAprobadas') }}" class="btn btn-warning btn-lg text-white">Recolecciones Aprobadas</a>
+                <a href="{{ route('hogar.solicitudes') }}" class="btn btn-info btn-lg text-white">Recolecciones Aceptadas en espera de aprobacion</a>
+                <a href="{{ route('hogar.recoleccionesAprobadas') }}" class="btn btn-warning btn-lg text-white">Recolecciones Aprobadas en espera de calificación</a>
                 <a href="{{ route('hogar.recoleccionesFinalizadas') }}" class="btn btn-dark btn-lg text-white">Recolecciones Finalizadas</a>
                 <a href="{{ route('hogar.bonificacion') }}" class="btn btn-success btn-lg">Bonificaciones</a>
         </div>

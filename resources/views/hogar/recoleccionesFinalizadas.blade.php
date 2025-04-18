@@ -15,7 +15,7 @@
                     <th>Reciclador</th>
                     <th>Materiales Recolectados</th>
                     <th>Calificación</th>
-                    <th>Puntos</th> <!-- Nueva columna para los puntos -->
+                    <th>Puntos</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,13 +30,27 @@
                             @endforeach
                         </ul>
                     </td>
-                    <td>{{ $recoleccion->rating ?? 'No Calificado' }}</td>
-                    <td>{{ $recoleccion->points ?? 'No Asignados' }}</td> <!-- Mostrar los puntos -->
+                    <td>
+                        @if($recoleccion->rating)
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if($i <= $recoleccion->rating)
+                                    ⭐
+                                @else
+                                    ☆
+                                @endif
+                            @endfor
+                        @else
+                            No calificado
+                        @endif
+                    </td>
+                    <td>{{ $recoleccion->points ?? 'No Asignados' }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
     @endif
+
     <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
 </div>
 @endsection
+

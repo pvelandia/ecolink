@@ -7,24 +7,8 @@
     <div class="card p-4 shadow-sm">
         @if($solicitud->hogar)
             <p><strong>Solicitante:</strong> {{ $solicitud->hogar->first_name }} {{ $solicitud->hogar->last_name }}</p>
-
-            @if($solicitud->hogar->average)
-                <p><strong>Calificación:</strong>
-                    @for ($i = 1; $i <= 5; $i++)
-                        @if($i <= $solicitud->hogar->average)
-                            ⭐
-                        @else
-                            ☆
-                        @endif
-                    @endfor
-                    ({{ $solicitud->hogar->average }} / 5)
-                </p>
-            @else
-                <p><strong>Calificación:</strong> No calificado aún</p>
-            @endif
         @else
             <p><strong>Solicitante:</strong> No disponible</p>
-            <p><strong>Calificación:</strong> No calificado aún</p>
         @endif
 
         <p><strong>Dirección:</strong> {{ $solicitud->address }}</p>

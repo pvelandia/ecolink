@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Assignment;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudController extends Controller
 {
@@ -138,7 +139,6 @@ class SolicitudController extends Controller
         return redirect()->route('reciclador.recoleccionesFinalizadas')->with('success', 'Puntos asignados con éxito.');
     }    
     
-    
     public function cancelarSolicitud($id)
     {
         $asignacion = Assignment::findOrFail($id);
@@ -166,6 +166,15 @@ class SolicitudController extends Controller
                         ->with('materials')
                         ->get();
         return view('hogar.solicitudesPendientes', compact('solicitudes'));
+    }
+
+    public function eliminarSolicitud($id)
+    {
+        // Buscar la solicitud por ID
+        $asignacion = Assignment::findOrFail($id);
+        // Eliminar la solicitud
+        $asignacion->delete();
+        return redirect()->route('hogar.solicitudesPendientes')->with('success', 'Solicitud eliminada correctamente.');
     }
 
     public function aceptar($id)

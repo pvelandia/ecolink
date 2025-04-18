@@ -32,8 +32,9 @@ Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
     Route::get('/hogar', fn () => view('hogar.home'))->name('hogar.home');
     Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
 
-    Route::get('/solicitudesPendientes', [SolicitudController::class, 'solicitudesPendientes'])->name('hogar.solicitudesPendientes');   
-
+    Route::get('/solicitudesPendientes', [SolicitudController::class, 'solicitudesPendientes'])->name('hogar.solicitudesPendientes');
+    Route::delete('/hogar/solicitud/{id}/eliminar', [SolicitudController::class, 'eliminarSolicitud'])->name('hogar.eliminarSolicitud');
+    
     Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('solicitudes.store');
     Route::get('/hogar/solicitudes/create', [SolicitudController::class, 'create'])->name('hogar.solicitudes.create');
 
@@ -51,9 +52,10 @@ Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
     Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');   
 
-    Route::get('/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');   
-    Route::post('/bonificacion/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
-});
+    Route::get('/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');
+    Route::post('/bonificaciones/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
+    
+    });
 
 
 // RUTAS PARA ROL: reciclador
@@ -68,6 +70,8 @@ Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclado
 
     Route::get('/reciclador/recoleccionesAceptadas', [SolicitudController::class, 'misSolicitudesAceptadas'])->name('reciclador.recoleccionesAceptadas');
     Route::put('/reciclador/cancelar-solicitud/{id}', [SolicitudController::class, 'cancelarSolicitud'])->name('reciclador.cancelar.solicitud');
+
+    Route::get('/reciclador/recoleccionesAprobadas', [RecoleccionesController::class, 'recoleccionesAprobadasR'])->name('reciclador.recoleccionesAprobadas');
 
     Route::get('/reciclador/recoleccionesFinalizadas', [SolicitudController::class, 'recoleccionesFinalizadas'])->name('reciclador.recoleccionesFinalizadas');
     Route::post('/reciclador/asignar-puntos/{id}', [SolicitudController::class, 'asignarPuntos'])->name('reciclador.asignarPuntos');

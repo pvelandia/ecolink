@@ -25,9 +25,13 @@
 
             <div class="d-grid gap-3 col-8 mx-auto">
                 <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-clipboard-check"></i> Solicitudes Pendientes</a>
+                    <i class="bi bi-clipboard-check"></i> Solicitudes Disponibles para aceptar</a>
                 <a href="{{ route('reciclador.recoleccionesAceptadas') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-clipboard-check"></i> Recolecciones Aceptadas</a>
+                    <i class="bi bi-clipboard-check"></i> Recolecciones Aceptadas en espera de aprobacion</a>
+
+                    <a href="{{ route('reciclador.recoleccionesAprobadas') }}" class="btn btn-dark btn-lg text-white">
+                    <i class="bi bi-box-arrow-up"></i> Recolecciones Aprobadas</a>
+
                 <a href="{{ route('reciclador.recoleccionesFinalizadas') }}" class="btn btn-dark btn-lg text-white">
                     <i class="bi bi-box-arrow-up"></i> Recolecciones Finalizadas</a>
             </div>

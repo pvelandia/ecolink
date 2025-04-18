@@ -9,5 +9,11 @@ class Coupon extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['company', 'description', 'discount', 'stock', 'points'];
+    protected $fillable = ['company', 'description', 'discount', 'stock', 'points',];
+
+    public function getNumeroCuponAttribute()
+    {
+        return ($this->stock_inicial - $this->stock);
+    }
+
 }

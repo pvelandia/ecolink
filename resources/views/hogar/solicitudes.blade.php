@@ -39,7 +39,7 @@
 <body>
 
     <div class="container py-5">
-        <h2 class="header-title text-center">Solicitudes Aceptadas</h2>
+        <h2 class="header-title text-center">Solicitudes Aceptadas en espera de que las apruebes</h2>
         @if($solicitudes->isEmpty())
             <div class="alert alert-info text-center">
                 No tienes solicitudes aceptadas en este momento.
@@ -55,18 +55,7 @@
 
                             <h5>Reciclador Asignado:</h5>
                             <p><strong>Nombre:</strong> {{ $solicitud->reciclador->first_name }} {{ $solicitud->reciclador->last_name }}</p>
-                            <p><strong>Calificación:</strong>
-                                @for ($i = 1; $i <= 5; $i++)
-                                    @if($i <= $solicitud->reciclador->average)
-                                        ⭐
-                                    @else
-                                        ☆
-                                    @endif
-                                @endfor
-                                ({{ $solicitud->reciclador->average }} / 5)
-                            </p>
-
-                            <h5>Materiales Recolectados:</h5>
+                            <h5>Materiales a recoger:</h5>
                             <ul>
                                 @foreach($solicitud->materials as $material)
                                     <li>{{ $material->name }} - Cantidad: {{ $material->pivot->quantity }}</li>
@@ -94,8 +83,8 @@
                     </div>
                 </div>
             @endforeach
-            <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
         @endif
+        <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
     </div>
     <!-- Bootstrap JS & Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

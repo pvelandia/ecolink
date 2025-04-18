@@ -48,11 +48,24 @@ class RecoleccionesController extends Controller
         $hogar = auth()->user(); 
         $recolecciones = Assignment::where('person_id', $hogar->id)
                                             ->where('state_id', 2)
-                                            ->with('reciclador', 'materials') // Asegura que las relaciones estén disponibles
+                                            ->with('reciclador', 'materials')
                                             ->get();
         return view('reciclador.recoleccionesAceptadas', compact('recolecciones'));
     }
     
+    public function recoleccionesAprobadasR()
+    {
+        $reciclador = auth()->user();
+        $asignaciones = Assignment::where('recycler_id', $reciclador->id)
+                                  ->where('state_id', 3) // Estado 'aprobado'
+                                  ->with('hogar', 'materials')
+                                  ->get();
+    
+        return view('reciclador.recoleccionesAprobadas', compact('asignaciones'));
+    }
+    
+    
+
     public function recoleccionesFinalizadas()
     {
         $hogar = auth()->user(); 
