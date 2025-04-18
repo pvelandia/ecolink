@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\RecoleccionesController;
 use App\Http\Controllers\BonificacionController;
-
+use App\Http\Controllers\AdminController;
 
 use App\Models\Role;
 use App\Http\Middleware\CheckRole;
@@ -24,6 +24,7 @@ Route::get('/register', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/register', [AuthController::class, 'register'])->middleware('guest')->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::get('/bloqueado', [AuthController::class, 'bloqueado'])->name('bloqueado');
 
 
 // RUTAS PARA ROL: hogar
@@ -75,6 +76,22 @@ Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclado
 
     Route::get('/reciclador/recoleccionesFinalizadas', [SolicitudController::class, 'recoleccionesFinalizadas'])->name('reciclador.recoleccionesFinalizadas');
     Route::post('/reciclador/asignar-puntos/{id}', [SolicitudController::class, 'asignarPuntos'])->name('reciclador.asignarPuntos');
+});
 
+//RUTAS PARA ROL: administrador
+Route::prefix('admin')->group(function () {
+    Route::get('/menu', [AdminController::class, 'menu'])->name('admin.menu');
+    Route::get('/usuarios', [AdminController::class, 'usuarios'])->name('admin.usuarios');
+    Route::get('/bonificaciones', [AdminController::class, 'bonificaciones'])->name('admin.bonificaciones');
+    Route::get('/reportes', [AdminController::class, 'reportes'])->name('admin.reportes');
+
+    Route::get('/admin/usuarios', [AdminController::class, 'usuarios'])->name('admin.usuarios');
+    Route::post('/admin/usuarios/{id}/actualizar-rol', [AdminController::class, 'actualizarRol'])->name('admin.usuarios.actualizarRol');
+    Route::post('/admin/usuarios/{id}/bloquear', [AdminController::class, 'bloquearUsuario'])->name('admin.usuarios.bloquear');
+
+    Route::post('/admin/bonificaciones/guardar', [AdminController::class, 'guardarCupon'])->name('admin.cupones.guardar');
+    Route::get('/admin/bonificaciones/{id}/editar', [AdminController::class, 'editarCupon'])->name('admin.editarCupon');
+    Route::put('/admin/bonificaciones/{id}/actualizar', [AdminController::class, 'actualizarCupon'])->name('admin.actualizarCupon');
+    Route::delete('/admin/bonificaciones/{id}/eliminar', [AdminController::class, 'eliminarCupon'])->name('admin.eliminarCupon');
 
 });

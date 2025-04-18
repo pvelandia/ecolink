@@ -1,48 +1,57 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Coupon;
-use App\Models\User;  // El modelo User ya está relacionado con la tabla 'people'
+use App\Models\CouponRedemption;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class BonificacionController extends Controller
 {
     public function index()
     {
-        // Obtener todos los cupones
+        // Obtener todos los cupones disponibles
         $cupones = Coupon::all();
-
+    
         // Obtener los puntos del usuario autenticado (ya que está en la tabla 'people')
         $user = auth()->user();
         $points = $user->points;
+    
+        // Obtener los cupones que el usuario ya ha canjeado
+        $canjeados = \App\Models\CouponRedemption::where('user_id', $user->id)
+            ->with('coupon')  // Relación con el cupón
+            ->get();
+    
+        // Pasar los cupones disponibles, los puntos y los canjeados a la vista
+        return view('hogar.bonificacion', compact('cupones', 'points', 'canjeados'));
+    }    
 
-        // Pasar los cupones y los puntos a la vista
-        return view('hogar.bonificacion', compact('cupones', 'points'));
-    }
-
-    public function canjear($couponId)
+    public function canjear($couponId, Request $request)
     {
         $coupon = Coupon::findOrFail($couponId);
         $user = auth()->user();
-    
-        // Verificar si ya tiene un cupón asignado
-        if ($user->coupon_id !== null) {
-            return redirect()->route('hogar.bonificacion')
-                ->with('error', 'Ya tienes un cupón asignado. Envialo a tu correo antes de obtener uno nuevo.');
-        }
-    
+
         // Verificar si tiene suficientes puntos y si hay stock disponible
         if ($user->points >= $coupon->points && $coupon->stock > 0) {
+            // Restar puntos al usuario
             $user->points -= $coupon->points;
-            $user->coupon_id = $coupon->id; // Asignar cupón al usuario
             $user->save();
-    
+
+            // Restar stock al cupón
             $coupon->stock -= 1;
             $coupon->save();
-    
+
+            // Registrar el canje en la tabla de coupon_redemptions
+            \App\Models\CouponRedemption::create([
+                'coupon_id' => $coupon->id,
+                'user_id'   => $user->id,
+                'redeemed_at' => now(),
+            ]);
+
             return redirect()->route('hogar.bonificacion')->with('success', 'Cupón canjeado correctamente.');
         } else {
             return redirect()->route('hogar.bonificacion')->with('error', 'No tienes suficientes puntos o el cupón está agotado.');
         }
-    }    
+    }     
 }

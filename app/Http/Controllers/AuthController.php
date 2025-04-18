@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
@@ -67,7 +65,9 @@ class AuthController extends Controller
             if ($role === 'Reciclador') {
                 return redirect()->route('reciclador.menu');
             } elseif ($role === 'Administrador') {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.menu');
+            } elseif ($role === 'Bloqueado') {
+                return redirect()->route('bloqueado');
             } elseif ($role === 'Hogar') {
                 return redirect()->route('hogar.home');
             } else {
@@ -77,7 +77,6 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Credenciales inválidas']);
         }
     }
-
 
     public function logout()
     {
@@ -89,5 +88,10 @@ class AuthController extends Controller
     {
         $roles = Role::all();
         return view('auth.register', compact('roles'));
+    }
+
+    public function bloqueado()
+    {
+        return view('bloqueado');
     }
 }
