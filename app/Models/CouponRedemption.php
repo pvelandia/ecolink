@@ -28,4 +28,9 @@ class CouponRedemption extends Model
     {
         return $this->belongsTo(Coupon::class, 'coupon_id'); // Relaciona la tabla con el modelo Coupon
     }
+    public function user()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
 }

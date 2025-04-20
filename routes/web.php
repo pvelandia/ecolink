@@ -55,7 +55,8 @@ Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
     Route::get('/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');
     Route::post('/bonificaciones/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
-    
+    Route::post('/bonificacion/reenviar/{id}', [BonificacionController::class, 'reenviarCorreo'])->name('bonificacion.reenviar');
+
     });
 
 

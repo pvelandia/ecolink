@@ -80,10 +80,11 @@
                     <td>{{ $canje->redeemed_at }}</td>
                     <td>
 <!-- Botón para enviar el cupón por correo -->
-                        <form action="{{ route('hogar.home', $canje->id) }}" method="GET">
-                            @csrf
-                            <button type="submit" class="btn btn-primary">Enviar por Correo</button>
-                        </form>
+<form action="{{ route('bonificacion.reenviar', $canje->id) }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-primary">Enviar por Correo</button>
+</form>
+
                     </td>
                 </tr>
                 @endforeach
