@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
@@ -95,7 +96,36 @@ class AdminController extends Controller
         
         return $pdf->download('recolecciones_finalizadas_admin.pdf');
     }
+    public function estadisticasRecolecciones()
+    {
+        $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
+    
+        $totalPorReciclador = Assignment::where('state_id', 4)
+            ->select('recycler_id', DB::raw('count(*) as total'))
+            ->groupBy('recycler_id')
+            ->pluck('total', 'recycler_id');
+    
+        $estadosPorReciclador = Assignment::select('recycler_id', 'state_id', DB::raw('count(*) as total'))
+            ->groupBy('recycler_id', 'state_id')
+            ->get();
+    
+        $porMes = Assignment::select(
+            DB::raw("DATE_FORMAT(assignment_date, '%M') as mes"),
+            DB::raw('count(*) as total')
+        )
+        ->whereYear('assignment_date', now()->year)
+        ->groupBy('mes')
+        ->orderBy(DB::raw("MONTH(MIN(assignment_date))"))
 
+        ->get();
+    
+        return view('admin.recolecciones.estadisticas', [
+            'recicladorNames' => $recicladores->values(),
+            'totalRecolecciones' => $totalPorReciclador->values(),
+            'estados' => $estadosPorReciclador,
+            'porMes' => $porMes,
+        ]);
+    }
     public function bloquearUsuario($id)
     {
         $usuario = User::findOrFail($id);

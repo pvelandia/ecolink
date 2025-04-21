@@ -29,6 +29,8 @@
             <i class="bi bi-clipboard-check"></i> Bonificaciones </a>
             <a href="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-clipboard-check"></i> Reportes </a>
+            <a href="{{ route('admin.recolecciones.estadisticas') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-clipboard-check"></i> Estadisticas </a>
             </div>
         </div>
     </div>
