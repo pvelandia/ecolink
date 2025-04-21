@@ -84,7 +84,8 @@ Route::prefix('admin')->group(function () {
     Route::get('/menu', [AdminController::class, 'menu'])->name('admin.menu');
     Route::get('/usuarios', [AdminController::class, 'usuarios'])->name('admin.usuarios');
     Route::get('/bonificaciones', [AdminController::class, 'bonificaciones'])->name('admin.bonificaciones');
-    Route::get('/reportes', [AdminController::class, 'reportes'])->name('admin.reportes');
+    Route::get('/recolecciones-finalizadas-admin', [AdminController::class, 'recoleccionesFinalizadasAdmin'])->name('admin.recoleccionesFinalizadasAdmin');
+    Route::post('/recolecciones-finalizadas-admin/pdf', [AdminController::class, 'generarPDF'])->name('admin.recoleccionesFinalizadasAdmin.pdf');
 
     Route::get('/admin/usuarios', [AdminController::class, 'usuarios'])->name('admin.usuarios');
     Route::post('/admin/usuarios/{id}/actualizar-rol', [AdminController::class, 'actualizarRol'])->name('admin.usuarios.actualizarRol');

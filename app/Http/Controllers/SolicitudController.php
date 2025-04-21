@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\AssignmentMaterial;
 use Illuminate\Support\Facades\Log;
 
+
 class SolicitudController extends Controller
 {
     public function create()
@@ -97,47 +98,37 @@ class SolicitudController extends Controller
         return view('reciclador.recoleccionesAceptadas', compact('asignaciones'));
     }
     
-    public function recoleccionesFinalizadas()
+    public function recoleccionesFinalizadas(Request $request)
     {
         $reciclador = auth()->user();
     
-        $asignaciones = Assignment::where('recycler_id', $reciclador->id)
-                                  ->where('state_id', 4) // Estado 'finalizado'
-                                  ->with('hogar', 'materials')
-                                  ->get();
+        // Empezamos la consulta base
+        $query = Assignment::where('recycler_id', $reciclador->id)
+            ->where('state_id', 4); // Solo las recolecciones finalizadas
+    
+        // Filtrar por fecha
+        if ($request->filled('fecha')) {
+            $query->whereDate('assignment_date', '=', $request->fecha);
+        }
+    
+        // Filtrar por material
+        if ($request->filled('material')) {
+            $query->whereHas('materials', function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->material . '%');
+            });
+        }
+    
+        // Filtrar por calificación
+        if ($request->filled('calificacion')) {
+            $query->where('rating', '=', $request->calificacion);
+        }
+    
+        // Obtener las asignaciones con relaciones
+        $asignaciones = $query->with('reciclador', 'materials')->get();
     
         return view('reciclador.recoleccionesFinalizadas', compact('asignaciones'));
     }
-
-    public function asignarPuntos(Request $request, $id)
-    {
-        $asignacion = Assignment::findOrFail($id);
-        
-        // Verificamos si ya se asignaron puntos
-        if ($asignacion->points > 0) {
-            return redirect()->route('reciclador.recoleccionesFinalizadas')->with('error', 'Ya se han asignado puntos a esta solicitud.');
-        }
     
-        // Validamos que los puntos estén entre 0 y 50
-        $validatedData = $request->validate([
-            'puntos' => 'required|integer|min:0|max:50',
-        ]);
-        
-        $puntosAsignados = $validatedData['puntos'];
-    
-        // Actualizamos los puntos de la asignación
-        $asignacion->points = $puntosAsignados;
-        $asignacion->save();
-    
-        // Actualizamos los puntos en la tabla 'people' sumando los puntos de todas las asignaciones
-        $hogar = $asignacion->hogar;  // El hogar o persona asociada a esta asignación
-    
-        // Sumamos los puntos de esta asignación a los puntos acumulados en la tabla 'people'
-        $hogar->points += $puntosAsignados;
-        $hogar->save();
-    
-        return redirect()->route('reciclador.recoleccionesFinalizadas')->with('success', 'Puntos asignados con éxito.');
-    }    
     
     public function cancelarSolicitud($id)
     {

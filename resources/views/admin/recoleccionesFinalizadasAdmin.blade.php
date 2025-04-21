@@ -1,11 +1,12 @@
-<!-- resources/views/hogar/recoleccionesFinalizadas.blade.php -->
+<!-- resources/views/admin/recoleccionesFinalizadasAdmin.blade.php -->
+
 @extends('layouts.app')
 
 @section('content')
 <div class="container py-5">
     <h2 class="text-center mb-4">♻️ Recolecciones Finalizadas</h2>
 
-    <form method="GET" action="{{ route('reciclador.recoleccionesFinalizadas') }}" class="mb-4">
+    <form method="GET" action="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="mb-4">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label for="fecha" class="form-label">📅 Fecha</label>
@@ -28,7 +29,7 @@
             </div>
             <div class="col-md-3 d-flex gap-2">
                 <button type="submit" class="btn btn-primary mt-auto">🔍 Filtrar</button>
-                <a href="{{ route('reciclador.recoleccionesFinalizadas') }}" class="btn btn-outline-secondary mt-auto">❌ Limpiar</a>
+                <a href="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="btn btn-outline-secondary mt-auto">❌ Limpiar</a>
             </div>
         </div>
     </form>
@@ -41,6 +42,7 @@
                 <tr>
                     <th>📆 Fecha de Recolección</th>
                     <th>👷 Reciclador</th>
+                    <th>🏠 Hogar</th>
                     <th>🧺 Materiales Recolectados</th>
                     <th>⭐ Calificación</th>
                     <th>🎁 Puntos</th>
@@ -51,6 +53,7 @@
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($recoleccion->assignment_date)->format('d/m/Y H:i') }}</td>
                     <td>{{ $recoleccion->reciclador->first_name }} {{ $recoleccion->reciclador->last_name }}</td>
+                    <td>{{ $recoleccion->hogar->first_name }} {{ $recoleccion->hogar->last_name }}</td>
                     <td>
                         <ul class="mb-0">
                             @foreach($recoleccion->materials as $material)
@@ -79,7 +82,14 @@
     @endif
 
     <div class="text-center">
-        <a href="{{ route('reciclador.menu') }}" class="btn btn-secondary mt-4">⬅️ Volver al inicio</a>
+        <form method="POST" action="{{ route('admin.recoleccionesFinalizadasAdmin.pdf') }}">
+            @csrf
+            <input type="hidden" name="fecha" value="{{ request('fecha') }}">
+            <input type="hidden" name="material" value="{{ request('material') }}">
+            <input type="hidden" name="calificacion" value="{{ request('calificacion') }}">
+            <button type="submit" class="btn btn-success mt-4">📄 Generar PDF</button>
+        </form>
+        <a href="{{ route('admin.menu') }}" class="btn btn-secondary mt-4">⬅️ Volver al inicio</a>
     </div>
 </div>
 @endsection

@@ -27,7 +27,7 @@
             <i class="bi bi-clipboard-check"></i> Usuarios </a>
             <a href="{{ route('admin.bonificaciones') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-clipboard-check"></i> Bonificaciones </a>
-            <a href="{{ route('admin.reportes') }}" class="btn btn-primary btn-lg">
+            <a href="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-clipboard-check"></i> Reportes </a>
             </div>
         </div>

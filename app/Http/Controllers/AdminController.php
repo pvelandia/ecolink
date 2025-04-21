@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Models\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
+use App\Models\Assignment;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -39,6 +41,59 @@ class AdminController extends Controller
         $usuario->save();
     
         return redirect()->route('admin.usuarios')->with('success', 'Rol actualizado correctamente.');
+    }
+    public function recoleccionesFinalizadasAdmin(Request $request)
+    {
+   
+
+        // Filtrado por fecha, material y calificación
+        $query = Assignment::where('state_id', 4); // Estado 'finalizado'
+
+        // Filtramos por fecha si existe el valor
+        if ($request->filled('fecha')) {
+            $query->whereDate('assignment_date', Carbon::parse($request->fecha));
+        }
+
+        // Filtramos por material si existe el valor
+        if ($request->filled('material')) {
+            $query->whereHas('materials', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->material . '%');
+            });
+        }
+
+        // Filtramos por calificación si existe el valor
+        if ($request->filled('calificacion')) {
+            $query->where('rating', $request->calificacion);
+        }
+
+        $asignaciones = $query->with('reciclador', 'hogar', 'materials')->get();
+
+        return view('admin.recoleccionesFinalizadasAdmin', compact('asignaciones'));
+    }
+
+    // Función para generar PDF con los resultados filtrados
+    public function generarPDF(Request $request)
+    {
+        $query = Assignment::where('state_id', 4); // Estado 'finalizado'
+
+        if ($request->filled('fecha')) {
+            $query->whereDate('assignment_date', Carbon::parse($request->fecha));
+        }
+
+        if ($request->filled('material')) {
+            $query->whereHas('materials', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->material . '%');
+            });
+        }
+
+        if ($request->filled('calificacion')) {
+            $query->where('rating', $request->calificacion);
+        }
+
+        $asignaciones = $query->with('reciclador', 'hogar', 'materials')->get();
+        $pdf = Pdf::loadView('admin.pdf.recoleccionesFinalizadasAdmin', compact('asignaciones'));
+        
+        return $pdf->download('recolecciones_finalizadas_admin.pdf');
     }
 
     public function bloquearUsuario($id)
