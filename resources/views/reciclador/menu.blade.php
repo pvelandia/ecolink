@@ -1,40 +1,73 @@
 @extends('layouts.app')
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Panel Reciclador</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f6f9;
-        }
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        .btn-lg {
-            font-size: 1.2rem;
-            padding: 1rem 2rem;
-        }
-    </style>
-</head>
-<body class="d-flex align-items-center justify-content-center vh-100">
-    <div class="container text-center">
-        <div class="card p-5">
-            <h2 class="mb-4 text-success">Bienvenido Reciclador</h2>
 
-            <div class="d-grid gap-3 col-8 mx-auto">
-                <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-clipboard-check"></i> Solicitudes Disponibles para aceptar</a>
-                <a href="{{ route('reciclador.recoleccionesAceptadas') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-clipboard-check"></i> Recolecciones Aceptadas en espera de aprobacion</a>
+@section('content')
+<style>
+    .grid-menu {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
 
-                    <a href="{{ route('reciclador.recoleccionesAprobadas') }}" class="btn btn-dark btn-lg text-white">
-                    <i class="bi bi-box-arrow-up"></i> Recolecciones Aprobadas</a>
+    .btn-cuadrado {
+        border-radius: 1rem;
+        width: 100%;
+        height: 140px;
+        font-size: 1rem;
+        background-color: #03A63C;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        overflow: hidden;
+        text-decoration: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
 
-                <a href="{{ route('reciclador.recoleccionesFinalizadas') }}" class="btn btn-dark btn-lg text-white">
-                    <i class="bi bi-box-arrow-up"></i> Recolecciones Finalizadas</a>
-            </div>
-        </div>
+    .btn-cuadrado:hover {
+        transform: scale(1.05);
+    }
+
+    .btn-cuadrado img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-bottom: 0.5rem;
+    }
+
+    .banner {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: black;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="banner">
+        <h1 style="font-size: 2.3em; margin-top: 0; margin-bottom: 0;">Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}, este es tu menu</h1>
     </div>
-</body>
+    <div class="grid-menu">
+        <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/8921/8921043.png') }}" alt="Solicitudes Disponibles">
+            Solicitudes Disponibles
+        </a>
+        <a href="{{ route('reciclador.recoleccionesAceptadas') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://www.serviciosecologicosintegrados.com/wp-content/uploads/2021/01/Iconos_Servicios_-01.png') }}" alt="Recolecciones Aceptadas">
+            Recolecciones Aceptadas
+        </a>
+        <a href="{{ route('reciclador.recoleccionesAprobadas') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/2726/2726544.png') }}" alt="Recolecciones Aprobadas">
+            Recolecciones Aprobadas
+        </a>
+        <a href="{{ route('reciclador.recoleccionesFinalizadas') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/2371/2371904.png') }}" alt="Recolecciones Finalizadas">
+            Recolecciones Finalizadas
+        </a>
+    </div>
+</div>
+@endsection

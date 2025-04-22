@@ -7,7 +7,7 @@ use App\Models\Assignment;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Carbon;
 
 class SolicitudController extends Controller
 {
@@ -23,12 +23,24 @@ class SolicitudController extends Controller
         $request->validate([
             'materials' => 'required|array',
             'materials.*.material_id' => 'required|exists:materials,id',
-            'materials.*.quantity' => 'required|numeric|min:0.1',
-            'collection_date' => 'required|date|after_or_equal:today',
+            'materials.*.quantity' => 'required|numeric|min:0.1|max:100', // máximo 100kg
+            'collection_date' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $selectedDate = Carbon::parse($value);
+                    $minDate = Carbon::now()->addDay(); // mínimo un día después
+                    if ($selectedDate->lt($minDate)) {
+                        $fail('La recolección debe solicitarse con al menos un día de anticipación.');
+                    }
+                },
+            ],
             'observation' => 'nullable|string|max:255',
             'address_part1' => 'required|string|max:255',
             'address_part2' => 'required|string|max:50',
-        ]);
+        ], [
+            'materials.*.quantity.max' => 'La cantidad de material no puede ser mayor a 100 kg por solicitud.',
+        ]);      
 
         // Crear la dirección concatenada
         $address = $request->address_part1 . ' #' . $request->address_part2;
@@ -54,8 +66,9 @@ class SolicitudController extends Controller
         }
 
         // Redirigir a la página de inicio con mensaje de éxito
-        return redirect()->route('hogar.home')->with('success', '¡Recolección solicitada correctamente!');
+        return redirect()->route('solicitudes.create')->with('success', '¡Recolección solicitada correctamente!');
     }
+
     // Método para mostrar las solicitudes pendientes reciclador
     public function index()
     {
@@ -128,8 +141,7 @@ class SolicitudController extends Controller
     
         return view('reciclador.recoleccionesFinalizadas', compact('asignaciones'));
     }
-    
-    
+     
     public function cancelarSolicitud($id)
     {
         $asignacion = Assignment::findOrFail($id);
@@ -181,18 +193,21 @@ class SolicitudController extends Controller
     public function aprobar($id)
     {
         $solicitud = Assignment::find($id);
-        $solicitud->state_id = 3; // 3 es el estado 'Aprobado'
+        $solicitud->state_id = 3;
         $solicitud->save();
-
-        return redirect()->route('hogar.solicitudes');
+        
+        return redirect()->route('hogar.solicitudes')
+                         ->with('success', '¡Solicitud aprobada con éxito!');
     }
-
+    
     public function rechazar($id)
     {
         $solicitud = Assignment::find($id);
-        $solicitud->state_id = 1; // 1 es el estado 'Pendiente'
-        $solicitud->recycler_id = null; // Borra el ID del reciclador
+        $solicitud->state_id = 1; // Estado 'Pendiente'
+        $solicitud->recycler_id = null;
         $solicitud->save();
-        return redirect()->route('hogar.solicitudes');
-    }
+    
+        return redirect()->route('hogar.solicitudes')
+                         ->with('error', 'Solicitud rechazada y regresada a espera de aprobacion de otro reciclador.');
+    }    
 }

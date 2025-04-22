@@ -5,7 +5,6 @@ use App\Models\Assignment;
 use Illuminate\Http\Request;
 
 class RecoleccionesController extends Controller
-
 {
     public function recoleccionesAprobadas()
     {
@@ -65,13 +64,12 @@ class RecoleccionesController extends Controller
     }
     
     
-
     public function recoleccionesFinalizadas()
     {
         $hogar = auth()->user(); 
         $recolecciones = Assignment::where('person_id', $hogar->id)
                                             ->where('state_id', 4)
-                                            ->with('reciclador', 'materials') // Asegura que las relaciones estén disponibles
+                                            ->with('reciclador', 'materials')
                                             ->get();
         return view('reciclador.recoleccionesAceptadas', compact('recolecciones'));
     }
@@ -88,5 +86,22 @@ class RecoleccionesController extends Controller
 
         // Pasar las recolecciones y los puntos a la vista
         return view('hogar.recoleccionesFinalizadas', compact('recolecciones', 'puntos'));
+    }
+    
+    public function asignarPuntos(Request $request, $id)
+    {
+        $request->validate([
+            'puntos' => 'required|integer|min:1|max:50',
+        ]);
+
+        $recoleccion = Assignment::findOrFail($id);
+        
+        // Asignar puntos solo si no tiene puntos asignados
+        if (!$recoleccion->points) {
+            $recoleccion->points = $request->puntos;
+            $recoleccion->save();
+        }
+
+        return redirect()->route('reciclador.recoleccionesFinalizadas')->with('success', 'Puntos asignados correctamente.');
     }
 }

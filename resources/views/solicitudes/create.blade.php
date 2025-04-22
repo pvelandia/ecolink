@@ -1,69 +1,101 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2 class="mb-4">Solicitar Recolección</h2>
+<style>
+    body {
+        background-color: #e6f5e5;
+    }
+    .card {
+        border-radius: 1rem;
+    }
+</style>
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+<div class="container py-5 d-flex justify-content-center align-items-center">
+    <div class="col-md-10">
+        <div class="card shadow p-4">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+            <h3 class="text-center mb-4 text-success"><i class="bi bi-truck"></i> Solicitar Recolección</h3>
 
-    <form method="POST" action="{{ route('solicitudes.store') }}">
-        @csrf
-
-        <div id="materials-container">
-            <div class="row mb-3 material-row">
-                <div class="col-md-6">
-                    <label>Material</label>
-                    <select name="materials[0][material_id]" class="form-control" required>
-                        <option value="">Selecciona un material</option>
-                        @foreach ($materials as $material)
-                            <option value="{{ $material->id }}">{{ $material->name }}</option>
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="list-unstyled mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li><i class="bi bi-exclamation-circle"></i> {{ $error }}</li>
                         @endforeach
-                    </select>
+                    </ul>
                 </div>
-                <div class="col-md-4">
-                    <label>Cantidad (kg)</label>
-                    <input type="number" step="0.1" name="materials[0][quantity]" class="form-control" required>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> {{ session('success') }}
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger remove-material">✖</button>
+            @endif
+
+            <form method="POST" action="{{ route('solicitudes.store') }}">
+                @csrf
+
+                <div id="materials-container">
+                    <div class="row mb-3 material-row">
+                        <div class="col-md-6">
+                            <label class="form-label">Material</label>
+                            <select name="materials[0][material_id]" class="form-control" required>
+                                <option value="">Selecciona un material</option>
+                                @foreach ($materials as $material)
+                                    <option value="{{ $material->id }}" {{ old('materials.0.material_id') == $material->id ? 'selected' : '' }}>{{ $material->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cantidad (kg)</label>
+                            <input type="number" step="0.1" name="materials[0][quantity]" class="form-control" value="{{ old('materials.0.quantity') }}" required>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end justify-content-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-material" title="Eliminar material">
+                                <i class="bi bi-x-circle fs-5"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                <button type="button" id="add-material" class="btn btn-outline-success mb-4">
+                    <i class="bi bi-plus-circle"></i> Agregar otro material
+                </button>
+
+                <hr>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-house-door"></i> Dirección</label>
+                    <input type="text" name="address_part1" class="form-control" value="{{ old('address_part1') }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-geo-alt"></i> Barrio</label>
+                    <input type="text" name="address_part2" class="form-control " value="{{ old('address_part2') }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-info-circle"></i> Indicación adicional (opcional)</label>
+                    <input type="text" name="address_part3" class="form-control" value="{{ old('address_part3') }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-calendar-event"></i> Fecha y hora de recolección</label>
+                    <input type="datetime-local" name="collection_date" class="form-control" value="{{ old('collection_date') }}" required>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-send-check"></i> Enviar solicitud
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{{ route('hogar.home') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver </a>
             </div>
         </div>
-
-        <button type="button" id="add-material" class="btn btn-secondary mb-3">+ Agregar otro material</button>
-
-        <!-- Campos para la dirección -->
-        <div class="mb-3">
-            <label>Dirección</label>
-            <input type="text" name="address_part1" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label>Barrio</label>
-            <input type="text" name="address_part2" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label>Indicacion adicional (opcional)</label>
-            <input type="text" name="address_part3" class="form-control">
-        </div>
-
-        <!-- Campo de fecha y hora -->
-        <div class="mb-3">
-            <label>Fecha y hora de recolección</label>
-            <input type="datetime-local" name="collection_date" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Enviar solicitud</button>
-    </form>
-    <a href="{{ route('hogar.home') }}" class="btn btn-secondary mt-3">Volver</a>
+    </div>
 </div>
+
 <script>
     let materialIndex = 1;
 
@@ -82,7 +114,7 @@
     });
 
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-material')) {
+        if (e.target.closest('.remove-material')) {
             const rows = document.querySelectorAll('.material-row');
             if (rows.length > 1) {
                 e.target.closest('.material-row').remove();

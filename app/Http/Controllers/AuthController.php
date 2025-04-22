@@ -12,78 +12,78 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'first_name'    => 'required|string|max:255',
-            'last_name'     => 'required|string|max:255',
-            'email'         => 'required|string|email|max:255|unique:people',
-            'password'      => 'required|string|min:6|confirmed',
-            'document'      => 'required|numeric|digits_between:6,12|unique:people',
-            'phone_number'  => 'required|numeric|digits_between:7,15',
-            'role_id'       => 'required|exists:roles,id',
+            'first_name'        => 'required|string|max:255',
+            'last_name'         => 'required|string|max:255',
+            'email'             => 'required|string|email|max:255|unique:people',
+            'password'          => 'required|string|min:6|confirmed',
+            'document'          => 'required|numeric|digits:10|unique:people',
+            'phone_number'      => 'required|numeric|digits:10',
+            'role_id'           => 'required|exists:roles,id',
         ], [
-            'first_name.required'    => 'First name is required.',
-            'last_name.required'     => 'Last name is required.',
-            'email.required'         => 'Email is required.',
-            'email.email'            => 'Email must be valid.',
-            'email.unique'           => 'This email is already registered.',
-            'password.required'      => 'Password is required.',
-            'password.min'           => 'Password must be at least 6 characters.',
-            'password.confirmed'     => 'Passwords do not match.',
-            'document.required'      => 'Document is required.',
-            'document.numeric'       => 'Document must be numeric.',
-            'document.digits_between'=> 'Document must be between 6 and 12 digits.',
-            'document.unique'        => 'This document is already registered.',
-            'phone_number.required'  => 'Phone number is required.',
-            'phone_number.numeric'   => 'Phone number must be numeric.',
-            'phone_number.digits_between' => 'Phone number must be between 7 and 15 digits.',
-            'role_id.required'       => 'You must select a role.',
+            'first_name.required'       => 'El nombre es obligatorio.',
+            'last_name.required'        => 'El apellido es obligatorio.',
+            'email.required'            => 'El correo electrónico es obligatorio.',
+            'email.email'               => 'El correo electrónico debe ser válido.',
+            'email.unique'              => 'Este correo electrónico ya está registrado.',
+            'password.required'         => 'La contraseña es obligatoria.',
+            'password.min'              => 'La contraseña debe tener al menos 6 caracteres.',
+            'password.confirmed'        => 'Las contraseñas no coinciden.',
+            'document.required'         => 'El número de documento es obligatorio.',
+            'document.numeric'          => 'El número de documento debe ser numérico.',
+            'document.digits'           => 'El número de documento debe tener exactamente 10 dígitos.',
+            'document.unique'           => 'Este documento ya está registrado.',
+            'phone_number.required'     => 'El número de teléfono es obligatorio.',
+            'phone_number.numeric'      => 'El número de teléfono debe ser numérico.',
+            'phone_number.digits'       => 'El número de teléfono debe tener exactamente 10 dígitos.',
+            'role_id.required'          => 'Debe seleccionar un rol.',
         ]);
-
+    
         $person = User::create([
-            'first_name'    => $request->first_name,
-            'last_name'     => $request->last_name,
-            'email'         => $request->email,
-            'password'      => Hash::make($request->password),
-            'document'      => $request->document,
-            'phone_number'  => $request->phone_number,
-            'role_id'       => $request->role_id,
+            'first_name'        => $request->first_name,
+            'last_name'         => $request->last_name,
+            'email'             => $request->email,
+            'password'          => Hash::make($request->password),
+            'document'          => $request->document,
+            'phone_number'      => $request->phone_number,
+            'role_id'           => $request->role_id,
         ]);
-
+    
         return redirect()->route('login')->with('success', 'Registro exitoso. Inicia sesión para continuar.');
     }
-    
 
     public function login(Request $request)
     {
-        // Validar las credenciales del usuario
         $credentials = $request->only('email', 'password');
-        
-        if (Auth::attempt($credentials)) {
-            // Si el login es exitoso, obtener el rol del usuario
-            $role = Auth::user()->role->name;
-
-            // Redirigir según el rol
-            if ($role === 'Reciclador') {
-                return redirect()->route('reciclador.menu');
-            } elseif ($role === 'Administrador') {
-                return redirect()->route('admin.menu');
-            } elseif ($role === 'Bloqueado') {
-                return redirect()->route('bloqueado');
-            } elseif ($role === 'Hogar') {
-                return redirect()->route('hogar.home');
-            } else {
-                return redirect()->route('hogar.home');
-            }
-            // Si las credenciales no son correctas
-            return back()->withErrors(['email' => 'Credenciales inválidas']);
+        $user = User::where('email', $credentials['email'])->first();
+        if (!$user) {
+            return back()->withErrors(['email' => 'El correo electrónico no está registrado.'])->withInput();
+        }    
+        if (!Auth::attempt($credentials)) {
+            return back()->withErrors(['password' => 'La contraseña es incorrecta.'])->withInput();
+        }
+    
+        $role = Auth::user()->role->name;    
+        // Redirigir según el rol
+        if ($role === 'Reciclador') {
+            return redirect()->route('reciclador.menu');
+        } elseif ($role === 'Administrador') {
+            return redirect()->route('admin.menu');
+        } elseif ($role === 'Bloqueado') {
+            return redirect()->route('bloqueado');
+        } elseif ($role === 'Hogar') {
+            return redirect()->route('hogar.home');
+        } else {
+            return redirect()->route('hogar.home');
         }
     }
 
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login');
+        session()->flush();  // Elimina todos los datos de la sesión
+        return redirect()->route('welcome');
     }
-
+    
     public function registerForm()
     {
         $roles = Role::all();

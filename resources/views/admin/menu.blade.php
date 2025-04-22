@@ -1,37 +1,73 @@
 @extends('layouts.app')
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Menu administrador</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f6f9;
-        }
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        .btn-lg {
-            font-size: 1.2rem;
-            padding: 1rem 2rem;
-        }
-    </style>
-</head>
-<body class="d-flex align-items-center justify-content-center vh-100">
-    <div class="container text-center">
-        <div class="card p-5">
-            <h2 class="mb-4 text-success">Bienvenido Administrador</h2>
-            <div class="d-grid gap-3 col-8 mx-auto">
-            <a href="{{ route('admin.usuarios') }}" class="btn btn-primary btn-lg">
-            <i class="bi bi-clipboard-check"></i> Usuarios </a>
-            <a href="{{ route('admin.bonificaciones') }}" class="btn btn-primary btn-lg">
-            <i class="bi bi-clipboard-check"></i> Bonificaciones </a>
-            <a href="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="btn btn-primary btn-lg">
-            <i class="bi bi-clipboard-check"></i> Reportes </a>
-            <a href="{{ route('admin.recolecciones.estadisticas') }}" class="btn btn-primary btn-lg">
-            <i class="bi bi-clipboard-check"></i> Estadisticas </a>
-            </div>
-        </div>
+
+@section('content')
+<style>
+    .grid-menu {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Cambiado a 2 columnas */
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-cuadrado {
+        border-radius: 1rem;
+        width: 100%;
+        height: 140px;
+        font-size: 1rem;
+        background-color: #03A63C;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        overflow: hidden;
+        text-decoration: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .btn-cuadrado:hover {
+        transform: scale(1.05);
+    }
+
+    .btn-cuadrado img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-bottom: 0.5rem;
+    }
+
+    .banner {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: black;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="banner">
+        <h1 style="font-size: 2.3em; margin-top: 0; margin-bottom: 0;">Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}, este es tu menú 📆</h1>
     </div>
-</body>
+    <div class="grid-menu">
+        <a href="{{ route('admin.usuarios') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn.pixabay.com/photo/2016/04/15/18/05/computer-1331579_1280.png') }}" alt="Usuarios">
+            Usuarios
+        </a>
+        <a href="{{ route('admin.bonificaciones') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/2331/2331729.png') }}" alt="Bonificaciones">
+            Bonificaciones
+        </a>
+        <a href="{{ route('admin.recoleccionesFinalizadasAdmin') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/8921/8921043.png') }}" alt="Reportes">
+            Reportes
+        </a>
+        <a href="{{ route('admin.recolecciones.estadisticas') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.freepik.com/256/3097/3097967.png?semt=ais_hybrid') }}" alt="Estadísticas">
+            Estadísticas
+        </a>
+    </div>
+</div>
+@endsection

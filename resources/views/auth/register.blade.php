@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro</title>
+    <title>Registro - EcoLink ♻️</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <style>
         body {
-            background: #f4f6f9;
+            background-color: #e6f5e5;
         }
         .card {
             border-radius: 1rem;
@@ -16,31 +16,37 @@
         .form-label {
             font-weight: 500;
         }
+        .error-list {
+        list-style-type: none;
+        padding-left: 0;
+        }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center vh-100">
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-7 col-lg-6">
+            <div class="col-md-8 col-lg-6">
                 <div class="card shadow p-4">
-                    <h3 class="text-center mb-4">Registro de Usuario</h3>
+                    <h3 class="text-center mb-4 text-success">Registro en EcoLink ♻️</h3>
 
-                    @if(session('success'))
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle"></i> {{ session('success') }}
-                        </div>
-                    @endif
+                    {{-- Mensajes de éxito --}}
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle"></i> {{ session('success') }}
+                    </div>
+                @endif
 
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li><i class="bi bi-exclamation-circle"></i> {{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                {{-- Mensajes de error --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0" style="list-style-type: none; padding-left: 0;">
+                            @foreach ($errors->all() as $error)
+                                <li><i class="bi bi-x-circle"></i> {{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                     <form action="{{ route('register.post') }}" method="POST">
                         @csrf
@@ -49,7 +55,7 @@
                             <label class="form-label">Nombre</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input type="text" name="first_name" class="form-control" required>
+                                <input type="text" name="first_name" class="form-control" required value="{{ old('first_name') }}">
                             </div>
                         </div>
 
@@ -57,7 +63,7 @@
                             <label class="form-label">Apellido</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input type="text" name="last_name" class="form-control" required>
+                                <input type="text" name="last_name" class="form-control" required value="{{ old('last_name') }}">
                             </div>
                         </div>
 
@@ -65,7 +71,7 @@
                             <label class="form-label">Correo</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" required>
+                                <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
                             </div>
                         </div>
 
@@ -73,7 +79,7 @@
                             <label class="form-label">Cédula</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
-                                <input type="text" name="document" class="form-control" required>
+                                <input type="text" name="document" class="form-control" required value="{{ old('document') }}">
                             </div>
                         </div>
 
@@ -81,7 +87,7 @@
                             <label class="form-label">Teléfono</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                <input type="text" name="phone_number" class="form-control" required>
+                                <input type="text" name="phone_number" class="form-control" required value="{{ old('phone_number') }}">
                             </div>
                         </div>
 
@@ -92,7 +98,9 @@
                                 <select name="role_id" class="form-select" required>
                                     <option value="">Seleccione un rol</option>
                                     @foreach($roles as $rol)
-                                        <option value="{{ $rol->id }}">{{ $rol->name }}</option>
+                                        <option value="{{ $rol->id }}" {{ old('role_id') == $rol->id ? 'selected' : '' }}>
+                                            {{ $rol->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -129,6 +137,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

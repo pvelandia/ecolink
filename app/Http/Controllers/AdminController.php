@@ -43,10 +43,9 @@ class AdminController extends Controller
     
         return redirect()->route('admin.usuarios')->with('success', 'Rol actualizado correctamente.');
     }
+
     public function recoleccionesFinalizadasAdmin(Request $request)
     {
-   
-
         // Filtrado por fecha, material y calificación
         $query = Assignment::where('state_id', 4); // Estado 'finalizado'
 
@@ -76,26 +75,31 @@ class AdminController extends Controller
     public function generarPDF(Request $request)
     {
         $query = Assignment::where('state_id', 4); // Estado 'finalizado'
-
+    
         if ($request->filled('fecha')) {
             $query->whereDate('assignment_date', Carbon::parse($request->fecha));
         }
-
+    
         if ($request->filled('material')) {
             $query->whereHas('materials', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->material . '%');
             });
         }
-
+    
         if ($request->filled('calificacion')) {
             $query->where('rating', $request->calificacion);
         }
-
+    
+        // Obtener las asignaciones con las relaciones necesarias
         $asignaciones = $query->with('reciclador', 'hogar', 'materials')->get();
-        $pdf = Pdf::loadView('admin.pdf.recoleccionesFinalizadasAdmin', compact('asignaciones'));
-        
+    
+        // Cargar la vista y establecer el papel en horizontal
+        $pdf = PDF::loadView('admin.pdf.recoleccionesFinalizadasAdmin', compact('asignaciones'))
+                    ->setPaper('a4', 'landscape'); // Establecer orientación horizontal
+    
         return $pdf->download('recolecciones_finalizadas_admin.pdf');
     }
+
     public function estadisticasRecolecciones()
     {
         $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
@@ -126,6 +130,7 @@ class AdminController extends Controller
             'porMes' => $porMes,
         ]);
     }
+    
     public function bloquearUsuario($id)
     {
         $usuario = User::findOrFail($id);

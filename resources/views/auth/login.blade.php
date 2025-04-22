@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
+    <title>Iniciar Sesión - EcoLink ♻️</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <style>
         body {
-            background: #f0f2f5;
+            background-color: #e6f5e5; /* Fondo verde claro */
         }
         .card {
             border-radius: 1rem;
+        }
+        .error-list {
+        list-style-type: none;
+        padding-left: 0;
         }
     </style>
 </head>
@@ -21,25 +25,7 @@
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card shadow p-4">
-                    <h3 class="text-center mb-4">Iniciar Sesión</h3>
-
-                    {{-- Mensajes de error --}}
-                    @if(session('error'))
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-circle"></i> {{ session('error') }}
-                        </div>
-                    @endif
-
-                    {{-- Validación de errores --}}
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li><i class="bi bi-x-circle"></i> {{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    <h3 class="text-center mb-4 text-success">Iniciar Sesión en EcoLink ♻️</h3>
 
                     {{-- Formulario de login --}}
                     <form action="{{ route('login.post') }}" method="POST">
@@ -49,19 +35,36 @@
                             <label class="form-label">Correo</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" required>
+                                <input type="email"
+                                       name="email"
+                                       class="form-control @error('email') is-invalid @enderror"
+                                       value="{{ old('email') }}"
+                                       required>
                             </div>
+                            @error('email')
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Contraseña</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input type="password" name="password" class="form-control" required>
+                                <input type="password"
+                                       name="password"
+                                       class="form-control @error('password') is-invalid @enderror"
+                                       required>
                             </div>
+                            @error('password')
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Ingresar
                         </button>
 
@@ -76,6 +79,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

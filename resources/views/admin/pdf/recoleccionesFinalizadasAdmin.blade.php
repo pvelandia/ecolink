@@ -1,5 +1,3 @@
-<!-- resources/views/admin/pdf/recoleccionesFinalizadasAdmin.blade.php -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,24 +7,42 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            background-color: #e6f5e5; /* Fondo verde claro */
+        }
+        h2 {
+            color: #025939; /* Color verde para el título */
+            text-align: center;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
         th, td {
-            padding: 8px;
+            padding: 10px;
             text-align: left;
             border: 1px solid #ddd;
         }
         th {
-            background-color: #f4f4f4;
+            background-color: #025939; /* Color verde para el encabezado */
+            color: white; /* Texto blanco en el encabezado */
+        }
+        td {
+            color: #025939; /* Color verde para el texto de las celdas */
+        }
+        ul {
+            padding-left: 20px; /* Espaciado para la lista de materiales */
+            margin: 0; /* Eliminar margen */
         }
     </style>
 </head>
 <body>
-    <h2>Recolecciones Finalizadas</h2>
+    <div style="text-align: center;">
+        <img src="{{ 'https://i.postimg.cc/3JLLydKZ/Imagen-de-Whats-App-2025-04-14-a-las-08-27-25-b82fdc0e.jpg' }}" alt="EcoLink" style="max-width: 200px; margin-bottom: 20px;"> <!-- Asegúrate de que esta URL sea correcta -->
+    </div>
+    
+    <h2>Reporte de Recolecciones Finalizadas</h2>
     <table>
         <thead>
             <tr>

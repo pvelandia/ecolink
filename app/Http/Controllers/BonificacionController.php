@@ -53,22 +53,22 @@ class BonificacionController extends Controller
             return redirect()->route('hogar.bonificacion')->with('error', 'No tienes suficientes puntos o el cupón está agotado.');
         }
     }
+
     public function reenviarCorreo($id)
-{
-    $redemption = \App\Models\CouponRedemption::with('coupon')->findOrFail($id);
-    $user = auth()->user();
+    {
+        $redemption = \App\Models\CouponRedemption::with('coupon')->findOrFail($id);
+        $user = auth()->user();
 
-    // Verifica que el canje pertenece al usuario autenticado
-    if ($redemption->user_id !== $user->id) {
-        return redirect()->back()->with('error', 'No tienes permiso para reenviar este correo.');
+        // Verifica que el canje pertenece al usuario autenticado
+        if ($redemption->user_id !== $user->id) {
+            return redirect()->back()->with('error', 'No tienes permiso para reenviar este correo.');
+        }
+
+        $coupon = $redemption->coupon;
+
+        // Reenviar el correo
+        Mail::to($user->email)->send(new \App\Mail\CuponCanjeado($coupon, $user, $redemption));
+
+        return redirect()->back()->with('success', 'El correo ha sido reenviado exitosamente.');
     }
-
-    $coupon = $redemption->coupon;
-
-    // Reenviar el correo
-    Mail::to($user->email)->send(new \App\Mail\CuponCanjeado($coupon, $user, $redemption));
-
-    return redirect()->back()->with('success', 'El correo ha sido reenviado exitosamente.');
-}
-
 }

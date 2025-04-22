@@ -10,10 +10,15 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!auth()->check() || auth()->user()->role->name !== $role) {
-            abort(403, 'No tienes permiso para acceder a esta página.');
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Por favor, inicia sesión.');
         }
-
+    
+        if (auth()->user()->role->name !== $role) {
+            return redirect()->route('home')->with('error', 'No tienes permisos para acceder a esta página.');
+        }
+    
         return $next($request);
     }
+    
 }
