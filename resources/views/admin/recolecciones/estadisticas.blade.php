@@ -9,15 +9,12 @@
         color: #025939;
     }
     .charts-wrapper {
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        margin-top: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
     }
     .chart-container {
-        width: 100%;
-        max-width: 500px;
-        margin: 1rem auto;
         background: white;
         padding: 1rem;
         border-radius: 1rem;
@@ -28,11 +25,9 @@
         border-radius: 1rem;
         padding: 2rem;
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        margin-top: 2rem;
+        margin: 3rem auto 2rem;
         width: 100%;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 800px;
     }
     th {
         background-color: #025939;
@@ -42,7 +37,16 @@
 
 <div class="container">
     <h2 class="text-center my-4">Estadísticas de Recolecciones</h2>
+    <form method="GET" action="{{ route('admin.recolecciones.estadisticas') }}" class="mb-4 p-4 bg-gray-100 rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {{-- Campos del formulario... --}}
+        </div>
 
+        <div class="mt-4 text-right">
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Filtrar</button>
+            <a href="{{ route('admin.recolecciones.estadisticas') }}" class="ml-2 text-gray-600 underline">Restablecer</a>
+        </div>
+    </form>
     <div class="charts-wrapper">
         <div class="chart-container">
             <h4 class="text-center">Total de Recolecciones por Reciclador</h4>
@@ -52,6 +56,21 @@
         <div class="chart-container">
             <h4 class="text-center">Comparativa por Estado</h4>
             <canvas id="estadoChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4 class="text-center">Kg Recolectados por Semana</h4>
+            <canvas id="semanaKgChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4 class="text-center">Kg Recolectados por Mes</h4>
+            <canvas id="mesKgChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h4 class="text-center">Recolecciones por Calificación</h4>
+            <canvas id="calificacionChart"></canvas>
         </div>
     </div>
 
@@ -78,6 +97,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // 📊 Total de Recolecciones por Reciclador
     const labels = {!! json_encode($recicladorNames) !!};
     const totalData = {!! json_encode($totalRecolecciones) !!};
 
@@ -104,6 +124,7 @@
         }
     });
 
+    // 📊 Comparativa por Estado
     const estadoData = {
         Pendientes: [],
         Aprobadas: [],
@@ -156,6 +177,86 @@
                     precision: 0
                 }
             }
+        }
+    });
+
+    // 📈 Kg recolectados por Semana
+    const semanaLabels = {!! json_encode($porSemanaKg->pluck('semana')) !!};
+    const semanaData = {!! json_encode($porSemanaKg->pluck('total_kg')) !!};
+
+    new Chart(document.getElementById('semanaKgChart'), {
+        type: 'line',
+        data: {
+            labels: semanaLabels,
+            datasets: [{
+                label: 'Kg Recolectados',
+                data: semanaData,
+                fill: false,
+                borderColor: '#025939',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Kg'
+                    }
+                }
+            }
+        }
+    });
+
+    // 📊 Kg recolectados por Mes
+    const mesKgLabels = {!! json_encode($porMesKg->pluck('mes')) !!};
+    const mesKgData = {!! json_encode($porMesKg->pluck('total_kg')) !!};
+
+    new Chart(document.getElementById('mesKgChart'), {
+        type: 'bar',
+        data: {
+            labels: mesKgLabels,
+            datasets: [{
+                label: 'Kg Recolectados',
+                data: mesKgData,
+                backgroundColor: 'rgba(2, 89, 57, 0.4)',
+                borderColor: 'rgba(2, 89, 57, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Kg'
+                    }
+                }
+            }
+        }
+    });
+
+    // 🍩 Recolecciones por Calificación
+    const calificacionLabels = {!! json_encode($porCalificacion->pluck('rating')) !!};
+    const calificacionData = {!! json_encode($porCalificacion->pluck('total')) !!};
+
+    new Chart(document.getElementById('calificacionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: calificacionLabels,
+            datasets: [{
+                label: 'Cantidad',
+                data: calificacionData,
+                backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32', '#87CEFA', '#90EE90'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
         }
     });
 </script>
