@@ -21,6 +21,7 @@ class User extends Authenticatable
         'bonuses',
         'role_id',
         'coupon_id',
+        'points',
     ];
     protected $table = 'people'; 
     protected $hidden = [
@@ -35,8 +36,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
-    
     public function role()
     {
         return $this->belongsTo(Role::class);

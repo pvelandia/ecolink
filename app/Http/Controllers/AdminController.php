@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Models\Material;
+use App\Models\AssignmentMaterial;
 
 class AdminController extends Controller
 {
@@ -100,154 +102,153 @@ class AdminController extends Controller
         return $pdf->download('recolecciones_finalizadas_admin.pdf');
     }
 
+    public function estadisticasRecolecciones()
+    {
+        $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
 
-public function estadisticasRecolecciones()
-{
-    $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
+        $totalPorReciclador = Assignment::where('state_id', 4)
+            ->select('recycler_id', DB::raw('count(*) as total'))
+            ->groupBy('recycler_id')
+            ->pluck('total', 'recycler_id');
 
-    $totalPorReciclador = Assignment::where('state_id', 4)
-        ->select('recycler_id', DB::raw('count(*) as total'))
-        ->groupBy('recycler_id')
-        ->pluck('total', 'recycler_id');
+        $estadosPorReciclador = Assignment::select('recycler_id', 'state_id', DB::raw('count(*) as total'))
+            ->groupBy('recycler_id', 'state_id')
+            ->get();
 
-    $estadosPorReciclador = Assignment::select('recycler_id', 'state_id', DB::raw('count(*) as total'))
-        ->groupBy('recycler_id', 'state_id')
-        ->get();
-
-    $porMes = Assignment::select(
-        DB::raw("DATE_FORMAT(assignment_date, '%M') as mes"),
-        DB::raw('count(*) as total')
-    )
-    ->whereYear('assignment_date', now()->year)
-    ->groupBy('mes')
-    ->orderBy(DB::raw("MONTH(MIN(assignment_date))"))
-    ->get();
-
-    // 📊 Datos: Material recolectado por semana (kg)
-    $porSemanaKg = DB::table('assignment_materials')
-        ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
-        ->where('assignments.state_id', 4)
-        ->select(
-            DB::raw('YEARWEEK(assignments.assignment_date, 1) as semana'),
-            DB::raw('SUM(assignment_materials.quantity) as total_kg')
+        $porMes = Assignment::select(
+            DB::raw("DATE_FORMAT(assignment_date, '%M') as mes"),
+            DB::raw('count(*) as total')
         )
-        ->groupBy('semana')
-        ->orderBy('semana')
-        ->get();
-
-    // 📊 Datos: Material recolectado por mes (kg)
-    $porMesKg = DB::table('assignment_materials')
-        ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
-        ->where('assignments.state_id', 4)
-        ->select(
-            DB::raw("DATE_FORMAT(assignments.assignment_date, '%M') as mes"),
-            DB::raw('SUM(assignment_materials.quantity) as total_kg')
-        )
+        ->whereYear('assignment_date', now()->year)
         ->groupBy('mes')
-        ->orderBy(DB::raw("MONTH(MIN(assignments.assignment_date))"))
+        ->orderBy(DB::raw("MONTH(MIN(assignment_date))"))
         ->get();
 
-    // 📊 Datos: Cantidad de recolecciones por calificación
-    $porCalificacion = Assignment::whereNotNull('rating')
-        ->select('rating', DB::raw('count(*) as total'))
-        ->groupBy('rating')
-        ->orderBy('rating')
-        ->get();
+        // 📊 Datos: Material recolectado por semana (kg)
+        $porSemanaKg = DB::table('assignment_materials')
+            ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+            ->where('assignments.state_id', 4)
+            ->select(
+                DB::raw('YEARWEEK(assignments.assignment_date, 1) as semana'),
+                DB::raw('SUM(assignment_materials.quantity) as total_kg')
+            )
+            ->groupBy('semana')
+            ->orderBy('semana')
+            ->get();
 
-    // 📊 Datos: Cantidad de recolecciones por estado
-    $porEstado = Assignment::select('state_id', DB::raw('count(*) as total'))
-        ->groupBy('state_id')
-        ->get();
+        // 📊 Datos: Material recolectado por mes (kg)
+        $porMesKg = DB::table('assignment_materials')
+            ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+            ->where('assignments.state_id', 4)
+            ->select(
+                DB::raw("DATE_FORMAT(assignments.assignment_date, '%M') as mes"),
+                DB::raw('SUM(assignment_materials.quantity) as total_kg')
+            )
+            ->groupBy('mes')
+            ->orderBy(DB::raw("MONTH(MIN(assignments.assignment_date))"))
+            ->get();
 
-    return view('admin.recolecciones.estadisticas', [
-        'recicladorNames' => $recicladores->values(),
-        'totalRecolecciones' => $totalPorReciclador->values(),
-        'estados' => $estadosPorReciclador,
-        'porMes' => $porMes,
-        'porSemanaKg' => $porSemanaKg,
-        'porMesKg' => $porMesKg,
-        'porCalificacion' => $porCalificacion,
-        'porEstado' => $porEstado,
-    ]);
-}
-public function generarEstadisticasPDF(Request $request)
-{
-    // Inicializar las variables con valores predeterminados
-    $labelsMateriales = [];
-    $dataMateriales = [];
-    $labelsMeses = [];
-    $dataMeses = [];
-    $labelsEstados = ['Pendiente', 'Aprobada', 'Rechazada'];
-    $dataEstados = [0, 0, 0]; // Inicializar con ceros para cada estado
-    $labelsCalificaciones = ['1 estrella', '2 estrellas', '3 estrellas', '4 estrellas', '5 estrellas'];
-    $dataCalificaciones = [0, 0, 0, 0, 0]; // Inicializar con ceros para las calificaciones
+        // 📊 Datos: Cantidad de recolecciones por calificación
+        $porCalificacion = Assignment::whereNotNull('rating')
+            ->select('rating', DB::raw('count(*) as total'))
+            ->groupBy('rating')
+            ->orderBy('rating')
+            ->get();
 
-    // Filtrar las recolecciones según los parámetros
-    $query = assignment::where('state_id', 3); // Solo recolecciones aprobadas
-    
-    // Filtro por fecha
-    if ($request->filled('fecha')) {
-        $query->whereDate('fecha_recoleccion', Carbon::parse($request->fecha));
+        // 📊 Datos: Cantidad de recolecciones por estado
+        $porEstado = Assignment::select('state_id', DB::raw('count(*) as total'))
+            ->groupBy('state_id')
+            ->get();
+
+        return view('admin.recolecciones.estadisticas', [
+            'recicladorNames' => $recicladores->values(),
+            'totalRecolecciones' => $totalPorReciclador->values(),
+            'estados' => $estadosPorReciclador,
+            'porMes' => $porMes,
+            'porSemanaKg' => $porSemanaKg,
+            'porMesKg' => $porMesKg,
+            'porCalificacion' => $porCalificacion,
+            'porEstado' => $porEstado,
+        ]);
     }
+    public function generarEstadisticasPDF(Request $request)
+    {
+        // Inicializar las variables con valores predeterminados
+        $labelsMateriales = [];
+        $dataMateriales = [];
+        $labelsMeses = [];
+        $dataMeses = [];
+        $labelsEstados = ['Pendiente', 'Aprobada', 'Rechazada'];
+        $dataEstados = [0, 0, 0]; // Inicializar con ceros para cada estado
+        $labelsCalificaciones = ['1 estrella', '2 estrellas', '3 estrellas', '4 estrellas', '5 estrellas'];
+        $dataCalificaciones = [0, 0, 0, 0, 0]; // Inicializar con ceros para las calificaciones
 
-    // Filtro por material
-    if ($request->filled('material')) {
-        $query->whereHas('materiales', function ($q) use ($request) {
-            $q->where('name', 'like', '%' . $request->material . '%');
-        });
-    }
+        // Filtrar las recolecciones según los parámetros
+        $query = assignment::where('state_id', 3); // Solo recolecciones aprobadas
+        
+        // Filtro por fecha
+        if ($request->filled('fecha')) {
+            $query->whereDate('fecha_recoleccion', Carbon::parse($request->fecha));
+        }
 
-    // Filtro por calificación
-    if ($request->filled('calificacion')) {
-        $query->where('calificacion', $request->calificacion);
-    }
+        // Filtro por material
+        if ($request->filled('material')) {
+            $query->whereHas('materiales', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->material . '%');
+            });
+        }
 
-    // Obtener las recolecciones filtradas
-    $recolecciones = $query->with('materiales')->get();
+        // Filtro por calificación
+        if ($request->filled('calificacion')) {
+            $query->where('calificacion', $request->calificacion);
+        }
 
-    // Calcular las estadísticas
-    foreach ($recolecciones as $recoleccion) {
-        // Materiales
-        foreach ($recoleccion->materiales as $material) {
-            $index = array_search($material->name, $labelsMateriales);
-            if ($index === false) {
-                $labelsMateriales[] = $material->name;
-                $dataMateriales[] = $material->pivot->cantidad;
-            } else {
-                $dataMateriales[$index] += $material->pivot->cantidad;
+        // Obtener las recolecciones filtradas
+        $recolecciones = $query->with('materiales')->get();
+
+        // Calcular las estadísticas
+        foreach ($recolecciones as $recoleccion) {
+            // Materiales
+            foreach ($recoleccion->materiales as $material) {
+                $index = array_search($material->name, $labelsMateriales);
+                if ($index === false) {
+                    $labelsMateriales[] = $material->name;
+                    $dataMateriales[] = $material->pivot->cantidad;
+                } else {
+                    $dataMateriales[$index] += $material->pivot->cantidad;
+                }
             }
+
+            // Meses
+            $mes = Carbon::parse($recoleccion->fecha_recoleccion)->format('F');
+            $indexMes = array_search($mes, $labelsMeses);
+            if ($indexMes === false) {
+                $labelsMeses[] = $mes;
+                $dataMeses[] = 1; // Inicializamos con 1 recolección en ese mes
+            } else {
+                $dataMeses[$indexMes]++;
+            }
+
+            // Estados
+            if ($recoleccion->estado == 1) $dataEstados[0]++;
+            if ($recoleccion->estado == 2) $dataEstados[1]++;
+            if ($recoleccion->estado == 3) $dataEstados[2]++;
+
+            // Calificaciones
+            $dataCalificaciones[$recoleccion->calificacion - 1]++;
         }
 
-        // Meses
-        $mes = Carbon::parse($recoleccion->fecha_recoleccion)->format('F');
-        $indexMes = array_search($mes, $labelsMeses);
-        if ($indexMes === false) {
-            $labelsMeses[] = $mes;
-            $dataMeses[] = 1; // Inicializamos con 1 recolección en ese mes
-        } else {
-            $dataMeses[$indexMes]++;
-        }
+        // Generar el PDF
+        $pdf = PDF::loadView('recoleccionesFinalizadasAdminGraficos', compact(
+            'labelsMateriales', 'dataMateriales', 
+            'labelsMeses', 'dataMeses', 
+            'labelsEstados', 'dataEstados', 
+            'labelsCalificaciones', 'dataCalificaciones'
+        ))->setPaper('a4', 'landscape'); // Establecer orientación horizontal
 
-        // Estados
-        if ($recoleccion->estado == 1) $dataEstados[0]++;
-        if ($recoleccion->estado == 2) $dataEstados[1]++;
-        if ($recoleccion->estado == 3) $dataEstados[2]++;
-
-        // Calificaciones
-        $dataCalificaciones[$recoleccion->calificacion - 1]++;
+        // Descargar el PDF
+        return $pdf->download('estadisticas_recolecciones.pdf');
     }
-
-    // Generar el PDF
-    $pdf = PDF::loadView('recoleccionesFinalizadasAdminGraficos', compact(
-        'labelsMateriales', 'dataMateriales', 
-        'labelsMeses', 'dataMeses', 
-        'labelsEstados', 'dataEstados', 
-        'labelsCalificaciones', 'dataCalificaciones'
-    ))->setPaper('a4', 'landscape'); // Establecer orientación horizontal
-
-    // Descargar el PDF
-    return $pdf->download('estadisticas_recolecciones.pdf');
-}
 
     public function bloquearUsuario($id)
     {
@@ -264,27 +265,46 @@ public function generarEstadisticasPDF(Request $request)
         return view('admin.bonificaciones', compact('cupones'));
     }
 
+    public function crearCupon()
+    {
+        return view('admin.crearCupon');
+    }
+
     public function guardarCupon(Request $request)
     {
         $request->validate([
             'company' => 'required|string|max:255',
             'description' => 'required|string',
-            'discount' => 'required|numeric|min:0',
+            'discount' => 'required|numeric|min:0|max:100',
             'stock' => 'required|integer|min:1',
             'points' => 'required|integer|min:1',
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'discount.min' => 'El Descuento debe ser mayor o igual a 0.',
+            'discount.max' => 'El Descuento debe ser como máximo 100.',
+            'stock.min' => 'El Stock debe ser mayor o igual a 1.',
+            'points.min' => 'El Puntos debe ser mayor o igual a 1.',
         ]);
-    
-        Coupon::create([
+        $data = [
             'company' => $request->company,
             'description' => $request->description,
             'discount' => $request->discount,
             'stock' => $request->stock,
             'stock_inicial' => $request->stock,
             'points' => $request->points,
-        ]);
-    
+            'address' => $request->address,
+            'phone' => $request->phone,
+        ];
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('cupones', 'public');
+            $data['image'] = $imagePath;
+        }
+        Coupon::create($data);
         return redirect()->route('admin.bonificaciones')->with('success', 'Cupón creado correctamente.');
     }
+    
     
     public function editarCupon($id)
     {
@@ -335,8 +355,73 @@ public function generarEstadisticasPDF(Request $request)
         return redirect()->route('admin.bonificaciones')->with('success', 'Cupón eliminado correctamente.');
     }
 
+
     public function reportes()
     {
         return view('admin.reportes');
+    }
+    
+
+    public function materiales()
+    {
+        $materials = Material::all();
+        return view('admin.materiales', compact('materials'));
+    }
+
+    public function crearMaterial()
+    {
+        return view('admin.crearMaterial');
+    }
+
+    public function storeMaterial(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:materials,name',
+            'points_kilo' => 'required|numeric|min:0',
+            'description' => 'nullable|string|max:1000',
+        ]);
+        if (Material::create([
+            'name' => $validated['name'],
+            'points_kilo' => $validated['points_kilo'],
+            'description' => $validated['description'] ?? null,
+        ])) {
+            return redirect()->route('admin.materiales')->with('success', 'Material creado con éxito.');
+        } else {
+            return back()->with('error', 'Hubo un problema al crear el material. Inténtalo de nuevo.');
+        }
+    }
+
+    public function editarMaterial($id)
+    {
+        $material = Material::findOrFail($id);
+        return view('admin.editarMaterial', compact('material'));
+    }
+
+    public function actualizarMaterial(Request $request, $id)
+    {
+        $material = Material::findOrFail($id);
+        $validated = $request->validate([
+            'points_kilo' => 'required|numeric|min:0|max:1000',
+            'description' => 'nullable|string|max:100',
+        ], [
+            // Mensajes de error personalizados
+            'points_kilo.max' => 'El número de puntos por kilo no puede exceder lo reglamentario.',
+            'description.max' => 'La descripción no puede tener más de 100 caracteres.',
+        ]);
+        $material->points_kilo = $validated['points_kilo'];
+        $material->description = $validated['description'] ?? $material->description;
+        $material->save();
+        return redirect()->route('admin.materiales')->with('success', 'Material actualizado correctamente.');
+    }
+
+    public function eliminarMaterial($id)
+    {
+        $existeAsignacion = AssignmentMaterial::where('material_id', $id)->exists();
+        if ($existeAsignacion) {
+            return redirect()->route('admin.materiales')->with('error', 'No se puede eliminar porque el material está asignado en 1 o mas recolecciones.');
+        }
+        Material::findOrFail($id)->delete();
+
+        return redirect()->route('admin.materiales')->with('success', 'Material eliminado correctamente.');
     }
 }

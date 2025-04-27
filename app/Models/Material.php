@@ -9,17 +9,17 @@ class Material extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'points_kilo', 'description'];
 
     public function assignmentMaterials()
     {
         return $this->hasMany(AssignmentMaterial::class);
     }
-    public function assignments()
-{
-    return $this->belongsToMany(Assignment::class, 'assignment_materials')
-                ->withPivot('quantity')
-                ->withTimestamps();
-}
 
+    public function assignments()
+    {
+        return $this->belongsToMany(Assignment::class, 'assignment_materials')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
 }

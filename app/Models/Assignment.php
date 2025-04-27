@@ -15,7 +15,7 @@ class Assignment extends Model
         'state_id', // si tienes estado
     ];    
 
-    // Relación con el hogar (solicitante)
+    // Relación con el hogar
     public function hogar()
     {
         return $this->belongsTo(User::class, 'person_id');

@@ -18,24 +18,14 @@ class RecoleccionesController extends Controller
 
     public function finalizar($id, Request $request)
     {
-        // Validar que la calificación esté presente y sea un número entre 1 y 5
         $request->validate([
             'calificacion' => 'required|integer|min:1|max:5',
         ]);
     
-        // Buscar la recolección por ID
         $recoleccion = Assignment::findOrFail($id);
-    
-        // Obtener la calificación del formulario
         $calificacion = $request->input('calificacion');
-    
-        // Guardar la calificación
         $recoleccion->rating = $calificacion;
-    
-        // Cambiar el estado de la recolección a 4 (finalizada)
         $recoleccion->state_id = 4;
-    
-        // Guardar los cambios
         $recoleccion->save();
     
         // Redirigir a la página de recolecciones
@@ -90,18 +80,34 @@ class RecoleccionesController extends Controller
     
     public function asignarPuntos(Request $request, $id)
     {
-        $request->validate([
-            'puntos' => 'required|integer|min:1|max:50',
-        ]);
-
         $recoleccion = Assignment::findOrFail($id);
-        
-        // Asignar puntos solo si no tiene puntos asignados
-        if (!$recoleccion->points) {
-            $recoleccion->points = $request->puntos;
-            $recoleccion->save();
+        $puntos = 0;
+        $cumplio = $request->input('cumplio');
+    
+        // Calcular los puntos basados en los materiales de la recolección
+        foreach ($recoleccion->materials as $material) {
+            $puntosMaterial = $material->pivot->quantity * $material->points_kilo;
+            $puntos += $puntosMaterial;
         }
-
+    
+        // Si no cumplió, aplicar un descuento de puntos
+        if ($cumplio == 0) {
+            $descuento = round($puntos * 0.20); // Calcula el 20% 
+            $puntos = max(0, $puntos - $descuento);
+        }
+    
+        // Asignar los puntos calculados a la recolección
+        $recoleccion->points = $puntos;
+        $recoleccion->save();
+    
+        $hogar = $recoleccion->hogar;
+        if ($hogar) {
+            $hogar->points += $puntos;  // Sumar los puntos
+            $hogar->save();
+        } else {
+            return redirect()->route('reciclador.recoleccionesFinalizadas')
+                             ->with('error', 'No se encontró un hogar asociado a esta recolección.');
+        }
         return redirect()->route('reciclador.recoleccionesFinalizadas')->with('success', 'Puntos asignados correctamente.');
-    }
+    }       
 }

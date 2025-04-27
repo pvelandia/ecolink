@@ -34,7 +34,9 @@
     </form>
 
     @if($asignaciones->isEmpty())
-        <p class="text-center mt-4">No hay recolecciones finalizadas que coincidan con tu búsqueda.</p>
+        <div class="alert alert-info text-center">
+            <i class="bi bi-exclamation-circle"></i> No hay recolecciones finalizadas que coincidan con tu búsqueda.
+        </div>
     @else
         <div class="table-responsive rounded shadow" style="max-height: 600px; overflow-y: auto;">
             <table class="table table-hover table-bordered align-middle text-center">
@@ -60,29 +62,37 @@
                             </ul>
                         </td>
                         <td class="text-center">
-                            @if($recoleccion->rating)
-                                @for ($i = 1; $i <= 5; $i++)
-                                    @if($i <= $recoleccion->rating)
-                                        <span style="color: gold; font-size: 1.5rem;">★</span>
-                                    @else
-                                        <span style="color: lightgray; font-size: 1.5rem;">★</span>
-                                    @endif
-                                @endfor
+                            @if($recoleccion->points)
+                                @if($recoleccion->rating)
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        @if($i <= $recoleccion->rating)
+                                            <span style="color: gold; font-size: 1.5rem;">★</span>
+                                        @else
+                                            <span style="color: lightgray; font-size: 1.5rem;">★</span>
+                                        @endif
+                                    @endfor
+                                @else
+                                    <span class="text-muted">No calificado</span>
+                                @endif
                             @else
-                                <span class="text-muted">No calificado</span>
+                                <span class="text-muted">No tiene puntos asignados</span>
+                                <form method="POST" action="{{ route('reciclador.asignarPuntos', $recoleccion->id ) }}">
+                                    @csrf
+                                    <div class="d-flex align-items-center">
+                                        <select name="cumplio" class="form-select form-select-sm" required>
+                                            <option value="1">Cumplió (100% puntos/kg)</option>
+                                            <option value="0">No cumplió (80% puntos/kg)</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-success btn-sm ms-2">Asignar</button>
+                                    </div>
+                                </form>
                             @endif
                         </td>
                         <td class="text-center">
                             @if($recoleccion->points)
                                 {{ $recoleccion->points }}
                             @else
-                                <div class="text-center">
-                                    <form method="POST" action="{{ route('reciclador.asignarPuntos', $recoleccion->id ) }}">
-                                        @csrf
-                                        <input type="number" name="puntos" min="1" max="50" required class="form-control d-inline-block" style="width: auto; display: inline;">
-                                        <button type="submit" class="btn btn-success btn-sm">Asignar</button>
-                                    </form>
-                                </div>
+                                <span class="text-muted">Esperando asignación</span>
                             @endif
                         </td>
                     </tr>

@@ -1,11 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    body {
+        background-color: #e6f5e5;
+    }
+    .card {
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    .card:hover {
+        transform: scale(1.03);
+    }
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .btn-custom {
+        background-color: #28a745;
+        color: white;
+    }
+</style>
+
 <div class="container py-5">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <h2 class="text-center">Bonificaciones Disponibles</h2>
+    <h2 class="text-center mb-4">Bonificaciones Disponibles</h2>
+
     <div class="mb-4">
-        <h4>Puntos Totales: {{ $points }}</h4>
+        <h2>Puntos Totales: {{ $points }}</h2>
     </div>
 
     {{-- Mensajes de éxito o error --}}
@@ -25,45 +48,46 @@
 
     {{-- Cupones Disponibles --}}
     @if($cupones->isEmpty())
-        <p>No hay bonificaciones disponibles en este momento.</p>
+        <div class="alert alert-info text-center">
+            <i class="bi bi-exclamation-circle"></i> No hay cupones disponibles.
+        </div>
     @else
-        <h4>Cupones Disponibles</h4>
-        <table class="table table-bordered table-hover">
-            <thead class="table-light text-center">
-                <tr>
-                    <th>Compañía</th>
-                    <th>Descripción</th>
-                    <th>Descuento (%)</th>
-                    <th>Puntos Requeridos</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody class="align-middle text-center">
-                @foreach($cupones as $cupon)
-                <tr>
-                    <td>{{ $cupon->company }}</td>
-                    <td>{{ $cupon->description }}</td>
-                    <td>{{ number_format($cupon->discount, 0) }}%</td>
-                    <td>{{ $cupon->points }}</td>
-                    <td>
-                        @if($points >= $cupon->points && $cupon->stock > 0)
-                            <form action="{{ route('bonificacion.canjear', $cupon->id) }}" method="POST" onsubmit="return confirmCanjear()">
-                                @csrf
-                                <button type="submit" class="btn btn-success btn-sm">Canjear</button>
-                            </form>
+        <div class="row">
+            @foreach($cupones as $cupon)
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow">
+                        @if($cupon->image)
+                            <img src="{{ asset('storage/' . $cupon->image) }}" class="card-img-top" alt="Imagen del cupón">
                         @else
-                            <button class="btn btn-secondary btn-sm" disabled>No disponible</button>
+                            <img src="https://via.placeholder.com/400x200?text=Sin+Imagen" class="card-img-top" alt="Sin imagen">
                         @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ $cupon->company }}</h5>
+                            <p class="card-text">{{ $cupon->description }}</p>
+                            <p><strong>Descuento:</strong> {{ number_format($cupon->discount, 0) }}%</p>
+                            <p><strong>Puntos Requeridos:</strong> {{ $cupon->points }}</p>
+                            <p><strong>Dirección:</strong> {{ $cupon->address }}</p>
+                            <p><strong>Teléfono:</strong> {{ $cupon->phone }}</p>
+                            <div class="d-flex justify-content-center">
+                                @if($points >= $cupon->points && $cupon->stock > 0)
+                                    <form action="{{ route('bonificacion.canjear', $cupon->id) }}" method="POST" onsubmit="return confirmCanjear()">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm">Canjear</button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-secondary btn-sm" disabled>No disponible</button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     @endif
 
     {{-- Cupones Canjeados --}}
     @if($canjeados->isNotEmpty())
-        <h4>Cupones Canjeados</h4>
+        <h4 class="mt-5">Cupones Canjeados</h4>
         <table class="table table-bordered table-hover mt-4">
             <thead class="table-light text-center">
                 <tr>
@@ -72,6 +96,9 @@
                     <th>Descuento (%)</th>
                     <th>Puntos Requeridos</th>
                     <th>Fecha de Canje</th>
+                    <th>Logo</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
                     <th>Acción</th>
                 </tr>
             </thead>
@@ -84,6 +111,15 @@
                     <td>{{ $canje->coupon->points }}</td>
                     <td>{{ $canje->redeemed_at }}</td>
                     <td>
+                        @if($canje->coupon->image)
+                            <img src="{{ asset('storage/' . $canje->coupon->image) }}" alt="Imagen del cupón" style="width: 50px; height: auto;">
+                        @else
+                            <span class="text-muted">Sin imagen</span>
+                        @endif
+                    </td>
+                    <td>{{ $canje->coupon->address }}</td>
+                    <td>{{ $canje->coupon->phone }}</td>
+                    <td>
                         <form action="{{ route('bonificacion.reenviar', $canje->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-primary btn-sm btn-hover-mail">Enviar por Correo</button>
@@ -94,6 +130,7 @@
             </tbody>
         </table>
     @endif
+
     <div class="text-center mt-3">
         <a href="{{ route('hogar.home') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
@@ -107,14 +144,5 @@
         return confirm('¿Estás seguro de que deseas canjear este cupón? Una vez canjeado no podrás cambiarlo.');
     }
 </script>
-<style>
-    .btn-hover-mail {
-        transition: background-color 0.3s, color 0.3s;
-    }
 
-    .btn-hover-mail:hover {
-        background-color: #004085 !important;
-        color: #ffffff !important;
-    }
-</style>
 @endsection

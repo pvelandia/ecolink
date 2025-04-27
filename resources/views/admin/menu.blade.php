@@ -68,6 +68,10 @@
             <img src="{{ asset('https://cdn-icons-png.freepik.com/256/3097/3097967.png?semt=ais_hybrid') }}" alt="Estadísticas">
             Estadísticas
         </a>
+        <a href="{{ route('admin.materiales') }}" class="btn btn-cuadrado">
+            <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/8653/8653007.png') }}" alt="Materiales">
+            Materiales
+        </a>
     </div>
 </div>
 @endsection

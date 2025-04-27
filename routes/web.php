@@ -89,14 +89,22 @@ Route::middleware(['web'])->group(function () {
         Route::post('/recolecciones-finalizadas-admin/pdf', [AdminController::class, 'generarPDF'])->name('admin.recoleccionesFinalizadasAdmin.pdf');
         Route::get('/admin/estadisticas/recolecciones', [AdminController::class, 'estadisticasRecolecciones'])->name('admin.recolecciones.estadisticas');
 
+        Route::get('/materiales', [AdminController::class, 'materiales'])->name('admin.materiales');
+        Route::get('/admin/crear/material', [AdminController::class, 'crearMaterial'])->name('admin.crearMaterial');
+        Route::post('/admin/crear/material', [AdminController::class, 'storeMaterial'])->name('admin.storeMaterial');
+
+        Route::get('/admin/editar/Material/{id}', [AdminController::class, 'editarMaterial'])->name('admin.editarMaterial');
+        Route::delete('/admin/materiales/{id}', [AdminController::class, 'eliminarMaterial'])->name('admin.eliminarMaterial');
+        Route::put('/admin/materiales/{id}', [AdminController::class, 'actualizarMaterial'])->name('admin.actualizarMaterial');
+
         Route::get('/admin/usuarios', [AdminController::class, 'usuarios'])->name('admin.usuarios');
         Route::post('/admin/usuarios/{id}/actualizar-rol', [AdminController::class, 'actualizarRol'])->name('admin.usuarios.actualizarRol');
         Route::post('/admin/usuarios/{id}/bloquear', [AdminController::class, 'bloquearUsuario'])->name('admin.usuarios.bloquear');
 
+        Route::get('admin/crearCupon', [AdminController::class, 'crearCupon'])->name('admin.crearCupon');
         Route::post('/admin/bonificaciones/guardar', [AdminController::class, 'guardarCupon'])->name('admin.cupones.guardar');
         Route::get('/admin/bonificaciones/{id}/editar', [AdminController::class, 'editarCupon'])->name('admin.editarCupon');
         Route::put('/admin/bonificaciones/{id}/actualizar', [AdminController::class, 'actualizarCupon'])->name('admin.actualizarCupon');
         Route::delete('/admin/bonificaciones/{id}/eliminar', [AdminController::class, 'eliminarCupon'])->name('admin.eliminarCupon');
-
     });
 });

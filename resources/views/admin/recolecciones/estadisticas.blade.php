@@ -36,6 +36,7 @@
 </style>
 
 <div class="container">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <h2 class="text-center my-4">Estadísticas de Recolecciones</h2>
     <form method="GET" action="{{ route('admin.recolecciones.estadisticas') }}" class="mb-4 p-4 bg-gray-100 rounded-xl">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -93,6 +94,11 @@
             </tbody>
         </table>
     </div>
+</div>
+<div class="text-center mt-3">
+    <a href="{{ route('admin.menu') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

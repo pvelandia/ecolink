@@ -7,10 +7,19 @@
     }
     .card {
         border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.3s;
     }
-    .table-dark th {
-        background-color: #343a40; /* Color de fondo negro para la fila de encabezado */
-        color: white; /* Color de texto blanco */
+    .card:hover {
+        transform: scale(1.03);
+    }
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .btn-custom {
+        background-color: #28a745;
+        color: white;
     }
 </style>
 
@@ -19,85 +28,67 @@
     <h2 class="text-center mb-4">Gestión de Bonificaciones</h2>
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> {{ session('success') }}
+        </div>
+    @endif
+    
+    @if(session('error'))
+        <div class="alert alert-danger">
+            <i class="bi bi-x-circle"></i> {{ session('error') }}
+        </div>
     @endif
 
     @if($cupones->count())
-        <h4>Cupones Existentes</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Empresa</th>
-                        <th>Descripción</th>
-                        <th>Descuento</th>
-                        <th>Stock</th>
-                        <th>Puntos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($cupones as $cupon)
-                        <tr>
-                            <td>{{ $cupon->company }}</td>
-                            <td>{{ $cupon->description }}</td>
-                            <td>{{ rtrim(rtrim(number_format($cupon->discount, 2, '.', ''), '0'), '.') }}%</td>
-                            <td>{{ $cupon->stock }}</td>
-                            <td>{{ $cupon->points }}</td>
-                            <td>
-                                <a href="{{ route('admin.editarCupon', $cupon->id) }}" class="btn btn-sm btn-primary">Editar</a>
-                                
-                                <form action="{{ route('admin.eliminarCupon', $cupon->id) }}" method="POST" style="display:inline-block;">
+        <div class="row">
+            @foreach($cupones as $cupon)
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow">
+                    @if($cupon->image)
+                        <img src="{{ asset('storage/' . $cupon->image) }}" class="card-img-top" alt="Imagen del cupón">
+                    @else
+                        <img src="https://via.placeholder.com/400x200?text=Sin+Imagen" class="card-img-top" alt="Sin imagen">
+                    @endif
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ $cupon->company }}</h5>
+                            <p class="card-text">{{ $cupon->description }}</p>
+                            <p><strong>Descuento:</strong> {{ rtrim(rtrim(number_format($cupon->discount, 2, '.', ''), '0'), '.') }}%</p>
+                            <p><strong>Stock:</strong> {{ $cupon->stock }}</p>
+                            <p><strong>Puntos:</strong> {{ $cupon->points }}</p>
+                            <div class="d-flex justify-content-center">
+                                <a href="{{ route('admin.editarCupon', $cupon->id) }}" class="btn btn-primary btn-sm me-2">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </a>
+
+                                <form action="{{ route('admin.eliminarCupon', $cupon->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este cupón?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este cupón?')">Eliminar</button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
     @else
-        <div class="alert alert-info text-center">No hay cupones existentes.</div>
+        <div class="alert alert-info text-center">
+            <i class="bi bi-exclamation-circle"></i> No hay cupones existentes.
+        </div>
     @endif
 
-    <div class="card shadow mt-5 p-4 mx-auto" style="max-width: 600px;">
-        <h4>Crear Cupón</h4>
-        <form action="{{ route('admin.cupones.guardar') }}" method="POST" class="mb-3"> @csrf
-
-            <div class="mb-3">
-                <label class="form-label">Empresa</label>
-                <input type="text" name="company" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea name="description" class="form-control" required></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Descuento (%)</label>
-                <input type="number" name="discount" class="form-control" step="0.01" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Stock</label>
-                <input type="number" name="stock" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Puntos necesarios</label>
-                <input type="number" name="points" class="form-control" required>
-            </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">Guardar Cupón</button>
-            </div>
-        </form>
+    <div class="text-center mt-4">
+        <a href="{{ route('admin.crearCupon') }}" class="btn btn-custom">
+            <i class="bi bi-plus-circle"></i> ¡Crea uno nuevo!
+        </a>
     </div>
+
     <div class="text-center mt-3">
         <a href="{{ route('admin.menu') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Volver </a>
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
     </div>
 </div>
 @endsection
