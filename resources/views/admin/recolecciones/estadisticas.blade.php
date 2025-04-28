@@ -68,7 +68,7 @@
                 <div class="row mb-4">
                 <div class="col-md-6">
                     <h5>Calificaciones</h5>
-                    <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                    <div class="chart-container" style="height: 230px;"> <!-- Gráfico más pequeño -->
                         <canvas id="calificacionChart"></canvas>
                     </div>
                 </div>
@@ -77,8 +77,8 @@
             <!-- Gráfico Recolecciones por mes -->
             <div class="mb-4">
                 <h5>Recolecciones por mes</h5>
-                <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
-                    <canvas id="recoleccionesMesChart"></canvas>
+                <div class="chart-container" style="height: 300px; width: 500px;">
+                <canvas id="recoleccionesMesChart"></canvas>
                 </div>
             </div>
 
@@ -166,7 +166,7 @@ window.onload = function () {
     new Chart(document.getElementById('calificacionChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: porCalificacion.map(item => `${item.rating} Estrellas`),
+            labels: porCalificacion.map(item => `${item.rating}`),
             datasets: [{
                 data: porCalificacion.map(item => item.total),
                 backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32']
