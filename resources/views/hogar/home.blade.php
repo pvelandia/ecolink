@@ -127,7 +127,7 @@
     <div class="estadisticas-reciclaje mb-4">
         <h4>Estadísticas de Reciclaje</h4>
         <p>Total reciclado: <strong>{{ $totalKgReciclados }} kg</strong></p>
-        <p>Árboles salvados: <strong>{{ $arbolesSalvados }}</strong></p>
+        <p>Árboles salvados: <strong>{{ $arbolesSalvados }}</strong></p> <img src="{{ asset('https://cdn-icons-png.flaticon.com/128/8608/8608169.png') }}" alt="Bonificaciones">
     </div>
 
     <!-- Gráfico de materiales reciclados -->
