@@ -138,15 +138,18 @@ $totalRecoleccionesCompletadas = Assignment::where('state_id', 4)
 
     // 📊 Material recolectado por semana (kg)
     $porSemanaKg = DB::table('assignment_materials')
-        ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
-        ->where('assignments.state_id', 4)
-        ->select(
-            DB::raw('YEARWEEK(assignments.assignment_date, 1) as semana'),
-            DB::raw('SUM(assignment_materials.quantity) as total_kg')
-        )
-        ->groupBy('semana')
-        ->orderBy('semana')
-        ->get();
+    ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+    ->where('assignments.state_id', 4)
+    ->select(
+        DB::raw('YEAR(assignments.assignment_date) as anio'),
+        DB::raw('WEEK(assignments.assignment_date, 1) as semana'), // Ojo: ahora WEEK
+        DB::raw('SUM(assignment_materials.quantity) as total_kg')
+    )
+    ->groupBy('anio', 'semana')
+    ->orderBy('anio')
+    ->orderBy('semana')
+    ->get();
+
 
     // 📊 Material recolectado por mes (kg)
     $porMesKg = DB::table('assignment_materials')

@@ -103,7 +103,7 @@ window.onload = function () {
     new Chart(document.getElementById('materialSemanaChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: porSemanaKg.map(item => `Semana ${item.semana}`),
+            labels: porSemanaKg.map(item => `Semana ${item.semana} - ${item.anio}`),
             datasets: [{
                 label: 'Kg/semana',
                 data: porSemanaKg.map(item => item.total_kg),
