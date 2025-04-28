@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Assignment;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
+use App\Mail\SolicitudAprobada;
+
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -218,14 +221,20 @@ class SolicitudController extends Controller
     }
 
     public function aprobar($id)
-    {
-        $solicitud = Assignment::find($id);
-        $solicitud->state_id = 3;
-        $solicitud->save();
-        
-        return redirect()->route('hogar.solicitudes')
-                         ->with('success', '¡Solicitud aprobada con éxito!');
-    }
+{
+    $solicitud = Assignment::find($id);
+    $solicitud->state_id = 3;
+    $solicitud->save();
+
+    // Enviar correo al hogar
+    Mail::to($solicitud->hogar->email)->send(new SolicitudAprobada($solicitud));
+
+    // Enviar correo al reciclador
+    Mail::to($solicitud->reciclador->email)->send(new SolicitudAprobada($solicitud));
+
+    return redirect()->route('hogar.solicitudes')
+                     ->with('success', '¡Solicitud aprobada con éxito y correos enviados!');
+}
     
     public function rechazar($id)
     {
