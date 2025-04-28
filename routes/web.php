@@ -31,8 +31,8 @@ Route::middleware(['web'])->group(function () {
     // RUTAS PARA ROL: hogar
     Route::middleware(['auth', CheckRole::class . ':Hogar'])->group(function () {
 
-        Route::get('/hogar', fn () => view('hogar.home'))->name('hogar.home');
-        Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
+        Route::get('/hogar', [SolicitudController::class, 'showMenu'])->name('hogar.home');       
+         Route::get('/solicitudes/crear', [SolicitudController::class, 'create'])->name('solicitudes.create');
 
         Route::get('/solicitudesPendientes', [SolicitudController::class, 'solicitudesPendientes'])->name('hogar.solicitudesPendientes');
         Route::delete('/hogar/solicitud/{id}/eliminar', [SolicitudController::class, 'eliminarSolicitud'])->name('hogar.eliminarSolicitud');
@@ -88,6 +88,7 @@ Route::middleware(['web'])->group(function () {
         Route::get('/recolecciones-finalizadas-admin', [AdminController::class, 'recoleccionesFinalizadasAdmin'])->name('admin.recoleccionesFinalizadasAdmin');
         Route::post('/recolecciones-finalizadas-admin/pdf', [AdminController::class, 'generarPDF'])->name('admin.recoleccionesFinalizadasAdmin.pdf');
         Route::get('/admin/estadisticas/recolecciones', [AdminController::class, 'estadisticasRecolecciones'])->name('admin.recolecciones.estadisticas');
+        Route::post('/admin/estadisticas/recolecciones/pdf', [AdminController::class, 'exportarPdf'])->name('admin.recolecciones.estadisticas.pdf');
 
         Route::get('/materiales', [AdminController::class, 'materiales'])->name('admin.materiales');
         Route::get('/admin/crear/material', [AdminController::class, 'crearMaterial'])->name('admin.crearMaterial');

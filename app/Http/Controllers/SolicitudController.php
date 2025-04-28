@@ -7,16 +7,43 @@ use App\Models\Assignment;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Carbon;
 
 class SolicitudController extends Controller
 {
+    
     public function create()
     {
         $materials = Material::all();
         return view('solicitudes.create', compact('materials'));
     }
-    
+    public function showMenu()
+{
+    $materialesReciclados = DB::table('assignments')
+            ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
+            ->join('materials', 'assignment_materials.material_id', '=', 'materials.id')
+            ->where('assignments.person_id', Auth::user()->id)
+            ->where('assignments.state_id', 4) // Solo las recolecciones aprobadas
+            ->select('materials.name as material', DB::raw('SUM(assignment_materials.quantity) as total_kg'))
+            ->groupBy('materials.name')
+            ->get();
+    // Obtén el total de kilogramos reciclados por el hogar
+    $totalKgReciclados = DB::table('assignments')
+    ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
+    ->where('assignments.person_id', Auth::user()->id)
+    ->where('assignments.state_id', 4) // Solo las recolecciones aprobadas
+    ->sum('assignment_materials.quantity'); // Asegúrate de que 'quantity' es el nombre correcto
+
+    // Calcula los árboles salvados
+    $kgPorArbol = 1000; // 1 tonelada = 1000 kg
+    $arbolesSalvados = round($totalKgReciclados / $kgPorArbol, 2);
+
+    // Pasa los valores a la vista
+    return view('hogar.home', compact('materialesReciclados', 'totalKgReciclados', 'arbolesSalvados'));
+}
+
     public function store(Request $request)
     {
         // Validación de los datos

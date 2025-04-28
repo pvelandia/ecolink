@@ -1,269 +1,220 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    body {
-        background-color: #e6f5e5;
-    }
-    h2, h4 {
-        color: #025939;
-    }
-    .charts-wrapper {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-    .chart-container {
-        background: white;
-        padding: 1rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .table-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        margin: 3rem auto 2rem;
-        width: 100%;
-        max-width: 800px;
-    }
-    th {
-        background-color: #025939;
-        color: white;
-    }
-</style>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
 <div class="container">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <h2 class="text-center my-4">Estadísticas de Recolecciones</h2>
-    <form method="GET" action="{{ route('admin.recolecciones.estadisticas') }}" class="mb-4 p-4 bg-gray-100 rounded-xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {{-- Campos del formulario... --}}
-        </div>
-
-        <div class="mt-4 text-right">
-            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Filtrar</button>
-            <a href="{{ route('admin.recolecciones.estadisticas') }}" class="ml-2 text-gray-600 underline">Restablecer</a>
-        </div>
-    </form>
-    <div class="charts-wrapper">
-        <div class="chart-container">
-            <h4 class="text-center">Total de Recolecciones por Reciclador</h4>
-            <canvas id="totalChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h4 class="text-center">Comparativa por Estado</h4>
-            <canvas id="estadoChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h4 class="text-center">Kg Recolectados por Semana</h4>
-            <canvas id="semanaKgChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h4 class="text-center">Kg Recolectados por Mes</h4>
-            <canvas id="mesKgChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h4 class="text-center">Recolecciones por Calificación</h4>
-            <canvas id="calificacionChart"></canvas>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="text-left">Estadísticas de Recolecciones</h1>
+        <div>
+            <a href="{{ route('admin.menu') }}" class="btn btn-secondary btn-sm">Volver</a>
+            <button id="download-pdf" class="btn btn-success btn-sm">Descargar PDF</button>
         </div>
     </div>
+    <div class="container">
+        <div class="bg-white p-3 rounded shadow-sm" id="pdf-content" style="max-width: 1100px; margin: 0 auto;">
+            <div class="mb-4 text-left">
+                <h2>Reporte de Recolecciones</h2>
+                <p>Generado el {{ now()->format('d/m/Y') }}</p>
+            </div>
 
-    <div class="table-card">
-        <h4 class="text-center mb-4">Resumen de Recolecciones por Mes</h4>
-        <table class="table table-bordered text-center">
-            <thead>
-                <tr>
-                    <th>Mes</th>
-                    <th>Total Recolecciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($porMes as $mes)
-                    <tr>
-                        <td>{{ $mes->mes }}</td>
-                        <td>{{ $mes->total }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+            <div class="text-left mb-4">
+                <p>
+                    En este reporte se presentan los resultados obtenidos de las estadísticas de las recolecciones realizadas durante las últimas semanas y meses. El análisis de los datos nos permite comprender mejor el desempeño del sistema de recolección y el impacto de nuestras acciones en la gestión de residuos reciclables.
+                </p>
+
+                <p>
+                    En cuanto a la recolección de materiales, se observa que las semanas con mayor volumen de residuos reciclados corresponden a las semanas {{ implode(', ', $porSemanaKg->pluck('semana')->toArray()) }}. Durante estos períodos, el peso de los materiales recolectados alcanzó un total de {{ implode(', ', $porSemanaKg->pluck('total_kg')->toArray()) }} kg por semana. Este comportamiento resalta la importancia de un seguimiento más riguroso durante las semanas de mayor volumen.
+                </p>
+
+                <p>
+                    En relación con los estados de las recolecciones, se destaca que el porcentaje de recolecciones aprobadas ha sido alto, con un total de {{ $porEstado->where('name', 'aprobado')->sum('total') }} recolecciones aprobadas, lo que demuestra un eficiente proceso de validación de las solicitudes. Además, el estado pendiente se mantiene bajo, con solo {{ $porEstado->where('name', 'pendiente')->sum('total') }} recolecciones pendientes.
+                </p>
+
+                <p>
+                    En cuanto a las calificaciones, la mayoría de las recolecciones fueron calificadas con {{ $porCalificacion->where('rating', 5)->sum('total') }} estrellas, lo que refleja una excelente satisfacción por parte de los usuarios. El sistema de recolección está funcionando de manera efectiva, y las recomendaciones para mejorar incluyen el fortalecimiento de las áreas con menor puntaje.
+                </p>
+
+                <p>
+                    A continuación, se presentan los gráficos con los detalles de las recolecciones, el volumen de material recolectado, el estado de las recolecciones y las calificaciones de los usuarios.
+                </p>
+            </div>
+ <br>
+            <!-- Gráfico Material (Kg por semana) y Estado de Recolección -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Material (Kg por semana)</h5>
+                    <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                        <canvas id="materialSemanaChart"></canvas>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Estados de Recolección</h5>
+                    <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                        <canvas id="estadoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Material (Kg por mes) y Calificaciones -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Material (Kg por mes)</h5>
+                    <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                        <canvas id="materialMesChart"></canvas>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Calificaciones</h5>
+                    <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                        <canvas id="calificacionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Recolecciones por mes -->
+            <div class="mb-4">
+                <h5>Recolecciones por mes</h5>
+                <div class="chart-container" style="height: 300px;"> <!-- Gráfico más pequeño -->
+                    <canvas id="recoleccionesMesChart"></canvas>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
-<div class="text-center mt-3">
-    <a href="{{ route('admin.menu') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Volver
-    </a>
-</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    // 📊 Total de Recolecciones por Reciclador
-    const labels = {!! json_encode($recicladorNames) !!};
-    const totalData = {!! json_encode($totalRecolecciones) !!};
+// Datos para los gráficos, pasando de la base de datos a los gráficos.
+const porSemanaKg = @json($porSemanaKg);
+const porMesKg = @json($porMesKg);
+const porMes = @json($porMes);
+const porCalificacion = @json($porCalificacion);
+const porEstado = @json($porEstado);
 
-    new Chart(document.getElementById('totalChart'), {
+// Función para asegurarse de que los gráficos estén cargados
+window.onload = function () {
+    // Gráfico Material (Kg por semana)
+    new Chart(document.getElementById('materialSemanaChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: porSemanaKg.map(item => `Semana ${item.semana}`),
             datasets: [{
-                label: 'Total de Recolecciones',
-                data: totalData,
-                backgroundColor: 'rgba(2, 89, 57, 0.4)',
-                borderColor: 'rgba(2, 89, 57, 1)',
-                borderWidth: 1
+                label: 'Kg/semana',
+                data: porSemanaKg.map(item => item.total_kg),
+                backgroundColor: '#4CAF50'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Gráfico Estados de Recolección
+    new Chart(document.getElementById('estadoChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: porEstado.map(item => item.name),
+            datasets: [{
+                data: porEstado.map(item => item.total),
+                backgroundColor: ['#66BB6A', '#FFCA28', '#EF5350'],
             }]
         },
         options: {
             responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    precision: 0
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    formatter: (value, context) => {
+                        let total = 0;
+                        context.chart.data.datasets[0].data.forEach((data) => {
+                            total += data;
+                        });
+                        let percentage = (value / total * 100).toFixed(1) + '%';
+                        return percentage;
+                    },
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 16
+                    },
+                    anchor: 'center',
+                    align: 'center'
                 }
             }
         }
     });
 
-    // 📊 Comparativa por Estado
-    const estadoData = {
-        Pendientes: [],
-        Aprobadas: [],
-        Finalizadas: []
-    };
-
-    @foreach($estados as $e)
-        @if($e->state_id == 1)
-            estadoData.Pendientes.push({{ $e->total }});
-        @elseif($e->state_id == 3)
-            estadoData.Aprobadas.push({{ $e->total }});
-        @elseif($e->state_id == 4)
-            estadoData.Finalizadas.push({{ $e->total }});
-        @endif
-    @endforeach
-
-    new Chart(document.getElementById('estadoChart'), {
+    // Gráfico Material (Kg por mes)
+    new Chart(document.getElementById('materialMesChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Pendientes',
-                    data: estadoData.Pendientes,
-                    backgroundColor: 'rgba(255, 206, 86, 0.5)',
-                    borderColor: 'rgba(255, 206, 86, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Aprobadas',
-                    data: estadoData.Aprobadas,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Finalizadas',
-                    data: estadoData.Finalizadas,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    precision: 0
-                }
-            }
-        }
-    });
-
-    // 📈 Kg recolectados por Semana
-    const semanaLabels = {!! json_encode($porSemanaKg->pluck('semana')) !!};
-    const semanaData = {!! json_encode($porSemanaKg->pluck('total_kg')) !!};
-
-    new Chart(document.getElementById('semanaKgChart'), {
-        type: 'line',
-        data: {
-            labels: semanaLabels,
+            labels: porMesKg.map(item => item.mes),
             datasets: [{
-                label: 'Kg Recolectados',
-                data: semanaData,
-                fill: false,
-                borderColor: '#025939',
-                tension: 0.3
+                label: 'Kg/mes',
+                data: porMesKg.map(item => item.total_kg),
+                backgroundColor: '#2196F3'
             }]
         },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Kg'
-                    }
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // 📊 Kg recolectados por Mes
-    const mesKgLabels = {!! json_encode($porMesKg->pluck('mes')) !!};
-    const mesKgData = {!! json_encode($porMesKg->pluck('total_kg')) !!};
-
-    new Chart(document.getElementById('mesKgChart'), {
-        type: 'bar',
-        data: {
-            labels: mesKgLabels,
-            datasets: [{
-                label: 'Kg Recolectados',
-                data: mesKgData,
-                backgroundColor: 'rgba(2, 89, 57, 0.4)',
-                borderColor: 'rgba(2, 89, 57, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Kg'
-                    }
-                }
-            }
-        }
-    });
-
-    // 🍩 Recolecciones por Calificación
-    const calificacionLabels = {!! json_encode($porCalificacion->pluck('rating')) !!};
-    const calificacionData = {!! json_encode($porCalificacion->pluck('total')) !!};
-
-    new Chart(document.getElementById('calificacionChart'), {
+    // Gráfico Calificaciones
+    new Chart(document.getElementById('calificacionChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: calificacionLabels,
+            labels: porCalificacion.map(item => `${item.rating} Estrellas`),
             datasets: [{
-                label: 'Cantidad',
-                data: calificacionData,
-                backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32', '#87CEFA', '#90EE90'],
-                borderWidth: 1
+                data: porCalificacion.map(item => item.total),
+                backgroundColor: ['#FFD700', '#C0C0C0', '#CD7F32']
             }]
         },
-        options: {
-            responsive: true
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
+
+    // Gráfico Recolecciones por mes
+    new Chart(document.getElementById('recoleccionesMesChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: porMes.map(item => item.mes),
+            datasets: [{
+                label: 'Recolecciones',
+                data: porMes.map(item => item.total),
+                borderColor: '#FFCA28',
+                backgroundColor: 'rgba(255, 202, 40, 0.2)',
+                fill: true
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+};
+
+document.getElementById('download-pdf').addEventListener('click', function() {
+    const element = document.getElementById('pdf-content');
+
+    // Asegurarse de que los gráficos se hayan cargado antes de generar el PDF
+    Promise.all(
+        Array.from(document.querySelectorAll('canvas')).map(canvas => {
+            return new Promise(resolve => {
+                if (canvas) {
+                    const chart = Chart.getChart(canvas);
+                    if (chart) chart.update();
+                }
+                resolve();
+            });
+        })
+    ).then(() => {
+        const opt = {
+            margin: 1,
+            filename: 'reporte_recolecciones.pdf',
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+        };
+        html2pdf().from(element).set(opt).save();
+    });
+});
 </script>
 @endsection

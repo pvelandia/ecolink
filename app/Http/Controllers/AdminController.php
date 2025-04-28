@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -101,76 +102,90 @@ class AdminController extends Controller
     
         return $pdf->download('recolecciones_finalizadas_admin.pdf');
     }
-
-    public function estadisticasRecolecciones()
+    
+    
+    public function exportarPdf(Request $request)
     {
-        $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
+        $images = $request->input('images', []);
+    
+        $pdf = Pdf::loadView('admin.recolecciones.estadisticas_pdf', compact('images'));
+        return $pdf->download('estadisticas_recolecciones.pdf');
+    }
+    
+    public function estadisticasRecolecciones()
+{
+    // Obtener los recicladores (usuarios con role_id 1)
+    $recicladores = User::where('role_id', 1)->pluck('first_name', 'id');
 
-        $totalPorReciclador = Assignment::where('state_id', 4)
-            ->select('recycler_id', DB::raw('count(*) as total'))
-            ->groupBy('recycler_id')
-            ->pluck('total', 'recycler_id');
+    // Obtener todos los materiales
+    $materiales = Material::all();
 
-        $estadosPorReciclador = Assignment::select('recycler_id', 'state_id', DB::raw('count(*) as total'))
-            ->groupBy('recycler_id', 'state_id')
-            ->get();
+    // Total de recolecciones completadas (estado = 4 -> completado)
+$totalRecoleccionesCompletadas = Assignment::where('state_id', 4)
+->count();
 
-        $porMes = Assignment::select(
-            DB::raw("DATE_FORMAT(assignment_date, '%M') as mes"),
-            DB::raw('count(*) as total')
+
+
+    // Recolecciones por mes
+    $porMes = Assignment::select(
+        DB::raw("DATE_FORMAT(assignment_date, '%M') as mes"),
+        DB::raw('count(*) as total')
+    )
+    ->whereYear('assignment_date', now()->year)
+    ->groupBy('mes')
+    ->orderBy(DB::raw("MONTH(MIN(assignment_date))"))
+    ->get();
+
+    // 📊 Material recolectado por semana (kg)
+    $porSemanaKg = DB::table('assignment_materials')
+        ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+        ->where('assignments.state_id', 4)
+        ->select(
+            DB::raw('YEARWEEK(assignments.assignment_date, 1) as semana'),
+            DB::raw('SUM(assignment_materials.quantity) as total_kg')
         )
-        ->whereYear('assignment_date', now()->year)
-        ->groupBy('mes')
-        ->orderBy(DB::raw("MONTH(MIN(assignment_date))"))
+        ->groupBy('semana')
+        ->orderBy('semana')
         ->get();
 
-        // 📊 Datos: Material recolectado por semana (kg)
-        $porSemanaKg = DB::table('assignment_materials')
-            ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
-            ->where('assignments.state_id', 4)
-            ->select(
-                DB::raw('YEARWEEK(assignments.assignment_date, 1) as semana'),
-                DB::raw('SUM(assignment_materials.quantity) as total_kg')
-            )
-            ->groupBy('semana')
-            ->orderBy('semana')
-            ->get();
+    // 📊 Material recolectado por mes (kg)
+    $porMesKg = DB::table('assignment_materials')
+        ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+        ->where('assignments.state_id', 4)
+        ->select(
+            DB::raw("DATE_FORMAT(assignments.assignment_date, '%M') as mes"),
+            DB::raw('SUM(assignment_materials.quantity) as total_kg')
+        )
+        ->groupBy('mes')
+        ->orderBy(DB::raw("MONTH(MIN(assignments.assignment_date))"))
+        ->get();
 
-        // 📊 Datos: Material recolectado por mes (kg)
-        $porMesKg = DB::table('assignment_materials')
-            ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
-            ->where('assignments.state_id', 4)
-            ->select(
-                DB::raw("DATE_FORMAT(assignments.assignment_date, '%M') as mes"),
-                DB::raw('SUM(assignment_materials.quantity) as total_kg')
-            )
-            ->groupBy('mes')
-            ->orderBy(DB::raw("MONTH(MIN(assignments.assignment_date))"))
-            ->get();
+    // 📊 Recolecciones por calificación
+    $porCalificacion = Assignment::whereNotNull('rating')
+        ->select('rating', DB::raw('count(*) as total'))
+        ->groupBy('rating')
+        ->orderBy('rating')
+        ->get();
 
-        // 📊 Datos: Cantidad de recolecciones por calificación
-        $porCalificacion = Assignment::whereNotNull('rating')
-            ->select('rating', DB::raw('count(*) as total'))
-            ->groupBy('rating')
-            ->orderBy('rating')
-            ->get();
+    // 📊 Recolecciones por estado
+    $porEstado =  Assignment::select('states.name', DB::raw('count(*) as total'))
+    ->join('states', 'states.id', '=', 'assignments.state_id')  // Unimos la tabla 'states'
+    ->groupBy('states.name')  // Agrupamos por el nombre del estado
+    ->get();
 
-        // 📊 Datos: Cantidad de recolecciones por estado
-        $porEstado = Assignment::select('state_id', DB::raw('count(*) as total'))
-            ->groupBy('state_id')
-            ->get();
+    // Devolver la vista con los datos
+    return view('admin.recolecciones.estadisticas', [
+        'recicladorNames' => $recicladores->values(),
+        'totalRecoleccionesCompletadas' => $totalRecoleccionesCompletadas,
+      
+        'porMes' => $porMes,
+        'porSemanaKg' => $porSemanaKg,
+        'porMesKg' => $porMesKg,
+        'porCalificacion' => $porCalificacion,
+        'porEstado' => $porEstado,
+    ]);
+}
 
-        return view('admin.recolecciones.estadisticas', [
-            'recicladorNames' => $recicladores->values(),
-            'totalRecolecciones' => $totalPorReciclador->values(),
-            'estados' => $estadosPorReciclador,
-            'porMes' => $porMes,
-            'porSemanaKg' => $porSemanaKg,
-            'porMesKg' => $porMesKg,
-            'porCalificacion' => $porCalificacion,
-            'porEstado' => $porEstado,
-        ]);
-    }
     public function generarEstadisticasPDF(Request $request)
     {
         // Inicializar las variables con valores predeterminados
