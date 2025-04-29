@@ -25,34 +25,34 @@ class BonificacionController extends Controller
     }
 
     public function canjear($couponId, Request $request)
-    {
-        $coupon = Coupon::findOrFail($couponId);
-        $user = auth()->user();
+{
+    $coupon = Coupon::findOrFail($couponId);
+    $user = auth()->user();
 
-        if ($user->points >= $coupon->points && $coupon->stock > 0) {
-            // Restar puntos al usuario
-            $user->points -= $coupon->points;
-            $user->save();
+    if ($user->points >= $coupon->points && $coupon->stock > 0) {
+        // Restar puntos al usuario
+        $user->points -= $coupon->points;
+        $user->save();
 
-            // Restar stock al cupón
-            $coupon->stock -= 1;
-            $coupon->save();
+        // Restar stock al cupón
+        $coupon->stock -= 1;
+        $coupon->save();
 
-            // Registrar el canje y guardar la instancia
-            $redemption = CouponRedemption::create([
-                'coupon_id' => $coupon->id,
-                'user_id'   => $user->id,
-                'redeemed_at' => now(),
-            ]);
+        // Registrar el canje y guardar la instancia
+        $redemption = CouponRedemption::create([
+            'coupon_id' => $coupon->id,
+            'user_id'   => $user->id,
+            'redeemed_at' => now(),
+        ]);
 
-            // Enviar correo incluyendo el número de canje (ID)
-            Mail::to($user->email)->send(new CuponCanjeado($coupon, $user, $redemption));
+        // Enviar correo incluyendo el número de canje (ID)
+        Mail::to($user->email)->send(new CuponCanjeado($coupon, $user, $redemption));
 
-            return redirect()->route('hogar.bonificacion')->with('success', 'Cupón canjeado correctamente.');
-        } else {
-            return redirect()->route('hogar.bonificacion')->with('error', 'No tienes suficientes puntos o el cupón está agotado.');
-        }
+        return redirect()->route('hogar.bonificacion')->with('success', 'Cupón canjeado correctamente.');
+    } else {
+        return redirect()->route('hogar.bonificacion')->with('error', 'No tienes suficientes puntos o el cupón está agotado.');
     }
+}
 
     public function reenviarCorreo($id)
     {
