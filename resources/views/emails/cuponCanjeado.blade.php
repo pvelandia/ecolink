@@ -4,15 +4,15 @@
     
     <ul style="list-style: none; padding-left: 0; font-size: 16px; line-height: 1.7; color: #555;">
         <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">🏢 <span style="font-weight: normal; color: #333;">Compañía:</span> {{ $coupon->company }}</li>
+        <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">📍 <span style="font-weight: normal; color: #333;">Dirección:</span> {{ $coupon->address }}</li>
+        <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">📞 <span style="font-weight: normal; color: #333;">Teléfono:</span> {{ $coupon->phone }}</li>
         <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">📝 <span style="font-weight: normal; color: #333;">Descripción:</span> {{ $coupon->description }}</li>
         <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">💸 <span style="font-weight: normal; color: #333;">Descuento:</span> {{ $coupon->discount }}%</li>
         <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">⭐ <span style="font-weight: normal; color: #333;">Puntos Usados:</span> {{ $coupon->points }}</li>
-        <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">📍 <span style="font-weight: normal; color: #333;">Dirección:</span> {{ $coupon->address }}</li>
-        <li style="margin-bottom: 10px; font-weight: bold; color: #388e3c;">📞 <span style="font-weight: normal; color: #333;">Teléfono:</span> {{ $coupon->phone }}</li>
-        
+
         @if($coupon->image)
                 <strong style="color: #388e3c;"></strong><br>
-                <img src="{{ asset('storage/' . $coupon->image) }}" alt="" style="max-width: 100%; border-radius: 10px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <img src="{{ asset('storage/cupones' . $coupon->image) }}" alt="" style="max-width: 100%; border-radius: 10px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             </li>
         @endif
     </ul>

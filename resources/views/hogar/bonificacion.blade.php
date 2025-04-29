@@ -57,7 +57,7 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow">
                         @if($cupon->image)
-                            <img src="{{ asset('storage/' . $cupon->image) }}" class="card-img-top" alt="Imagen del cupón">
+                            <img src="{{ asset('storage/cupones/' . $cupon->image) }}" class="card-img-top" alt="Imagen del cupón">
                         @else
                             <img src="https://via.placeholder.com/400x200?text=Sin+Imagen" class="card-img-top" alt="Sin imagen">
                         @endif
@@ -112,7 +112,7 @@
                     <td>{{ $canje->redeemed_at }}</td>
                     <td>
                         @if($canje->coupon->image)
-                            <img src="{{ asset('storage/' . $canje->coupon->image) }}" alt="Imagen del cupón" style="width: 50px; height: auto;">
+                            <img src="{{ asset('storage/cupones/' . $canje->coupon->image) }}" style="width: 100px; height: 60px; object-fit: cover;" alt="Imagen del cupón">
                         @else
                             <span class="text-muted">Sin imagen</span>
                         @endif

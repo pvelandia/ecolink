@@ -38,13 +38,16 @@ class CuponCanjeado extends Mailable
 
         // Si el cupón tiene una imagen, adjuntarla al correo
         if ($this->coupon->image) {
-            $imagePath = public_path('storage/' . $this->coupon->image);
-            $email->attach($imagePath, [
-                'as' => 'coupon-image.jpg', // Puedes cambiar el nombre del archivo
-                'mime' => 'image/jpeg', // Especifica el tipo de archivo, cambia si es otro formato
-            ]);
-        }
-
+            $imagePath = public_path('storage/cupones/' . $this->coupon->image);
+        
+            if (file_exists($imagePath)) {
+                $mime = mime_content_type($imagePath);
+                $email->attach($imagePath, [
+                    'as' => 'coupon-image.' . pathinfo($imagePath, PATHINFO_EXTENSION),
+                    'mime' => $mime,
+                ]);
+            }
+        }        
         return $email;
     }
 }
