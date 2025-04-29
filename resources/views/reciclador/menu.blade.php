@@ -4,7 +4,7 @@
 <style>
     .grid-menu {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
         margin-top: 2rem;
     }
@@ -39,18 +39,43 @@
     }
 
     .banner {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: bold;
-        color: black;
+        color: #333;
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+    }
+
+    .chart-container {
+        margin-top: 1.5rem;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Ajustes del canvas para hacerlo más pequeño */
+    .chart-container canvas {
+        width: 100% !important;
+        height: 300px !important;
+        max-height: 300px;
+    }
+
+    /* Responsiveness */
+    @media (max-width: 768px) {
+        .chart-container {
+            margin-top: 1rem;
+        }
     }
 </style>
 
 <div class="container mt-4">
     <div class="banner">
-        <h1 style="font-size: 2.3em; margin-top: 0; margin-bottom: 0;">Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}, este es tu menu</h1>
+        <h1>Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }} - Estadísticas de Recolección</h1>
     </div>
+    
+    <!-- Botones -->
     <div class="grid-menu">
         <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-cuadrado">
             <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/8921/8921043.png') }}" alt="Solicitudes Disponibles">
@@ -69,5 +94,82 @@
             Recolecciones Finalizadas
         </a>
     </div>
+
+    <!-- Calificación promedio -->
+    <div class="mt-4 mb-4">
+        <h4>Calificación Promedio de Recolecciones: <strong>{{ number_format($calificacionPromedio->promedio, 2) }}</strong></h4>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row">
+        <!-- Gráfico de recolecciones por mes -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Recolecciones por Mes</h5>
+                <canvas id="recoleccionesPorMesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico de kilogramos por material -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Kilogramos por Material</h5>
+                <canvas id="materialesRecolectadosChart"></canvas>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Recolecciones por Mes
+    var ctx1 = document.getElementById('recoleccionesPorMesChart').getContext('2d');
+    var recoleccionesPorMesChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: @json($recoleccionesPorMes->pluck('mes')),
+            datasets: [{
+                label: 'Cantidad de Recolecciones',
+                data: @json($recoleccionesPorMes->pluck('cantidad')),
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de Kilogramos por Material
+    var ctx2 = document.getElementById('materialesRecolectadosChart').getContext('2d');
+    var materialesRecolectadosChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: @json($materialesRecolectados->pluck('name')),
+            datasets: [{
+                label: 'Kilogramos Recolectados',
+                data: @json($materialesRecolectados->pluck('total_kg')),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 @endsection

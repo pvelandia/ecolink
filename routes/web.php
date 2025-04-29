@@ -64,7 +64,7 @@ Route::middleware(['web'])->group(function () {
     // RUTAS PARA ROL: reciclador
     Route::middleware(['auth', CheckRole::class . ':Reciclador'])->prefix('Reciclador')->group(function () {
 
-        Route::get('/menu', fn () => view('reciclador.menu'))->name('reciclador.menu');
+        Route::get('/menu', [RecoleccionesController::class, 'showStats'])->name('reciclador.menu');
 
         Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('reciclador.solicitudes');
         Route::get('/{id}/solicitudesDetalle', [SolicitudController::class, 'show'])->name('reciclador.solicitudesDetalle');

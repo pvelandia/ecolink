@@ -3,9 +3,56 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RecoleccionesController extends Controller
 {
+    // Controlador para mostrar las estadísticas del recolector autenticado
+    public function showStats()
+    {
+        $recolectorId = Auth::user()->id;
+    
+        DB::statement("SET lc_time_names = 'es_ES'"); // Establecer el idioma a español
+
+        $recoleccionesPorMes = DB::table('assignments')
+            ->where('recycler_id', $recolectorId)
+            ->where('state_id', 4)
+            ->select(
+                DB::raw('YEAR(assignment_date) as year'),
+                DB::raw('MONTH(assignment_date) as mes_num'),
+                DB::raw('MONTHNAME(assignment_date) as mes'),
+                DB::raw('COUNT(*) as cantidad')
+            )
+            ->groupBy(
+                DB::raw('YEAR(assignment_date), MONTH(assignment_date), MONTHNAME(assignment_date)')
+            )
+            ->orderBy(
+                DB::raw('YEAR(assignment_date), MONTH(assignment_date)')
+            )
+            ->get();
+        
+        // Kilogramos de cada material recolectado - Solo para el recolector autenticado con estado 4
+        $materialesRecolectados = DB::table('assignment_materials')
+            ->join('materials', 'assignment_materials.material_id', '=', 'materials.id')
+            ->join('assignments', 'assignment_materials.assignment_id', '=', 'assignments.id')
+            ->where('assignments.recycler_id', $recolectorId) // Filtro por recolector
+            ->where('assignments.state_id', 4) // Filtro por estado 4 (finalizado)
+            ->select('materials.name', DB::raw('SUM(assignment_materials.quantity) as total_kg'))
+            ->groupBy('materials.name')
+            ->get();
+    
+        // Calificación promedio de las recolecciones - Solo para el recolector autenticado con estado 4
+        $calificacionPromedio = DB::table('assignments')
+            ->where('recycler_id', $recolectorId) // Filtro por recolector
+            ->where('state_id', 4) // Filtro por estado 4 (finalizado)
+            ->select(DB::raw('AVG(rating) as promedio'))
+            ->first();
+    
+        return view('reciclador.menu', compact('recoleccionesPorMes', 'materialesRecolectados', 'calificacionPromedio'));
+    }
+    
+
     public function recoleccionesAprobadas()
     {
         // Obtener las recolecciones con estado 3 (Aprobadas), cargando la relación de recicladores
