@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class RecoleccionesController extends Controller
 {
-    // Controlador para mostrar las estadísticas del recolector autenticado
     public function showStats()
     {
         $recolectorId = Auth::user()->id;
@@ -52,7 +51,6 @@ class RecoleccionesController extends Controller
         return view('reciclador.menu', compact('recoleccionesPorMes', 'materialesRecolectados', 'calificacionPromedio'));
     }
     
-
     public function recoleccionesAprobadas()
     {
         // Obtener las recolecciones con estado 3 (Aprobadas), cargando la relación de recicladores
@@ -100,17 +98,37 @@ class RecoleccionesController extends Controller
         return view('reciclador.recoleccionesAprobadas', compact('asignaciones'));
     }
     
-    
     public function recoleccionesFinalizadas()
     {
         $hogar = auth()->user(); 
-        $recolecciones = Assignment::where('person_id', $hogar->id)
-                                            ->where('state_id', 4)
-                                            ->with('reciclador', 'materials')
-                                            ->get();
-        return view('reciclador.recoleccionesAceptadas', compact('recolecciones'));
-    }
     
+        $recolecciones = Assignment::where('person_id', $hogar->id)
+                                    ->where('state_id', 4)
+                                    ->with('reciclador', 'materials')
+                                    ->get();
+    
+        // Estadísticas de reciclaje
+        $materialesReciclados = DB::table('assignments')
+            ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
+            ->join('materials', 'assignment_materials.material_id', '=', 'materials.id')
+            ->where('assignments.person_id', $hogar->id)
+            ->where('assignments.state_id', 4)
+            ->select('materials.name as material', DB::raw('SUM(assignment_materials.quantity) as total_kg'))
+            ->groupBy('materials.name')
+            ->get();
+    
+        $totalKgReciclados = DB::table('assignments')
+            ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
+            ->where('assignments.person_id', $hogar->id)
+            ->where('assignments.state_id', 4)
+            ->sum('assignment_materials.quantity');
+    
+        $kgPorArbol = 1000; // 1 tonelada = 1000 kg
+        $arbolesSalvados = round($totalKgReciclados / $kgPorArbol, 2);
+    
+        return view('hogar.recoleccionesFinalizadas', compact('recolecciones', 'totalKgReciclados', 'arbolesSalvados', 'materialesReciclados'));
+    }
+
     public function finalizadas()
     {
         // Obtener las recolecciones con estado 4 (Finalizadas)

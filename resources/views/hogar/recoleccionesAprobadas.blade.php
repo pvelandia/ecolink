@@ -88,6 +88,17 @@
                     </div>
                     <button type="submit" class="btn btn-success btn-lg w-100">Finalizar y Calificar</button>
                 </form>
+                @php
+                    $horasRestantes = Carbon::parse($recoleccion->assignment_date)->diffInHours(now(), false);
+                @endphp
+                @if ($horasRestantes < -3) 
+                    <form action="{{ route('recolecciones.cancelarFinal', $recoleccion->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de cancelar esta recolección? Esta acción no se puede deshacer.');">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-lg w-100 mt-2">
+                            <i class="bi bi-x-circle"></i> Cancelar Recolección
+                        </button>
+                    </form>
+                @endif
             </div>
         @endforeach
     @endif

@@ -1,9 +1,7 @@
 @extends('layouts.app')
-
 @php
     use Carbon\Carbon;
 @endphp
-
 @section('content')
 <head>
     <meta charset="UTF-8">
@@ -85,6 +83,12 @@
 <div class="container py-5">
     <h2 class="header-title text-center">Recolecciones Aprobadas</h2>
 
+    @if (session('success'))
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> {{ session('success') }}
+        </div>
+    @endif
+    
     @if ($asignaciones->isEmpty())
         <div class="alert alert-info text-center">
             <i class="bi bi-exclamation-circle"></i> No tienes solicitudes aprobadas en este momento.
@@ -109,6 +113,17 @@
                             <p><span class="info-label">Fecha de Recolección:</span> {{ Carbon::parse($asignacion->assignment_date)->translatedFormat('d \d\e F \d\e Y \- h:i A') }} </p>
                             
                             <p class="te-esperamos">¡Te esperamos!</p>
+                            @php
+                                $horasRestantes = Carbon::parse($asignacion->assignment_date)->diffInHours(now(), false);
+                            @endphp
+                            @if ($horasRestantes < -3) 
+                                <form action="{{ route('recolecciones.cancelarFinalR', $asignacion->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de cancelar esta recolección? Esta acción no se puede deshacer.');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-lg w-100 mt-2">
+                                        <i class="bi bi-x-circle"></i> Cancelar Recolección
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\Material;
 use App\Models\AssignmentMaterial;
 use App\Mail\SolicitudAprobada;
+use App\Mail\SolicitudCancelada;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -23,33 +24,12 @@ class SolicitudController extends Controller
         return view('solicitudes.create', compact('materials'));
     }
     public function showMenu()
-{
-    $materialesReciclados = DB::table('assignments')
-            ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
-            ->join('materials', 'assignment_materials.material_id', '=', 'materials.id')
-            ->where('assignments.person_id', Auth::user()->id)
-            ->where('assignments.state_id', 4) // Solo las recolecciones aprobadas
-            ->select('materials.name as material', DB::raw('SUM(assignment_materials.quantity) as total_kg'))
-            ->groupBy('materials.name')
-            ->get();
-    // Obtén el total de kilogramos reciclados por el hogar
-    $totalKgReciclados = DB::table('assignments')
-    ->join('assignment_materials', 'assignments.id', '=', 'assignment_materials.assignment_id')
-    ->where('assignments.person_id', Auth::user()->id)
-    ->where('assignments.state_id', 4) // Solo las recolecciones aprobadas
-    ->sum('assignment_materials.quantity'); // Asegúrate de que 'quantity' es el nombre correcto
-
-    // Calcula los árboles salvados
-    $kgPorArbol = 1000; // 1 tonelada = 1000 kg
-    $arbolesSalvados = round($totalKgReciclados / $kgPorArbol, 2);
-
-    // Pasa los valores a la vista
-    return view('hogar.home', compact('materialesReciclados', 'totalKgReciclados', 'arbolesSalvados'));
-}
-
+    {
+        return view('hogar.home');
+    }
+    
     public function store(Request $request)
     {
-        // Validación de los datos
         $request->validate([
             'materials' => 'required|array',
             'materials.*.material_id' => 'required|exists:materials,id',
@@ -81,9 +61,10 @@ class SolicitudController extends Controller
         // Crear la solicitud de recolección (Assignment) y guardar la dirección
         $assignment = Assignment::create([
             'person_id' => auth()->id(),
-            'assignment_date' => now(), // Fecha y hora actual
+            'assignment_date' => $request->collection_date,
             'state_id' => 1,  // Estado inicial: pendiente
             'address' => $address,  // Guardar la dirección en el campo address
+            'created_at' => Carbon::now(),
         ]);
 
         // Asociar los materiales con la solicitud de recolección
@@ -95,22 +76,19 @@ class SolicitudController extends Controller
             ]);
         }
 
-        // Redirigir a la página de inicio con mensaje de éxito
+        // Redirigir con ,+mensaje de éxito
         return redirect()->route('solicitudes.create')->with('success', '¡Recolección solicitada correctamente!');
     }
 
-    // Método para mostrar las solicitudes pendientes reciclador
-    public function index()
+    public function index()    // Método para mostrar las solicitudes pendientes reciclador
     {
-        // Obtener las solicitudes con estado '1' (pendiente) y cargar los materiales asociados
         $solicitudes = Assignment::where('state_id', 1) 
                                     ->with('materials') 
                                     ->get();
         return view('reciclador.solicitudes', compact('solicitudes'));
     }
 
-    // Método para ver los detalles de una solicitud
-    public function show($id)
+    public function show($id)     // Método para ver los detalles de una solicitud
     {
         // Asegúrate de cargar las relaciones 'hogar' y 'materials' cuando traes la solicitud
         $solicitud = Assignment::with(['hogar', 'materials'])->findOrFail($id);
@@ -221,21 +199,21 @@ class SolicitudController extends Controller
     }
 
     public function aprobar($id)
-{
-    $solicitud = Assignment::find($id);
-    $solicitud->state_id = 3;
-    $solicitud->save();
+    {
+        $solicitud = Assignment::find($id);
+        $solicitud->state_id = 3;
+        $solicitud->save();
 
-    // Enviar correo al hogar
-    Mail::to($solicitud->hogar->email)->send(new SolicitudAprobada($solicitud));
+        // Enviar correo al hogar
+        Mail::to($solicitud->hogar->email)->send(new SolicitudAprobada($solicitud));
 
-    // Enviar correo al reciclador
-    Mail::to($solicitud->reciclador->email)->send(new SolicitudAprobada($solicitud));
+        // Enviar correo al reciclador
+        Mail::to($solicitud->reciclador->email)->send(new SolicitudAprobada($solicitud));
 
-    return redirect()->route('hogar.solicitudes')
-                     ->with('success', '¡Solicitud aprobada con éxito y correos enviados!');
-}
-    
+        return redirect()->route('hogar.solicitudes')
+                        ->with('success', '¡Solicitud aprobada con éxito y correos enviados!');
+    }
+        
     public function rechazar($id)
     {
         $solicitud = Assignment::find($id);
@@ -245,5 +223,43 @@ class SolicitudController extends Controller
     
         return redirect()->route('hogar.solicitudes')
                          ->with('error', 'Solicitud rechazada y regresada a espera de aprobacion de otro reciclador.');
-    }    
+    }
+    public function cancelarFinal($id)
+    {
+        $asignacion = Assignment::findOrFail($id);
+        $reciclador = $asignacion->reciclador; 
+
+        $horasFaltantes = Carbon::now()->diffInHours(Carbon::parse($asignacion->assignment_date), false);
+    
+        if ($horasFaltantes <= 3) {
+            return redirect()->back()->with('error', 'Solo puedes cancelar una recolección con más de 3 horas de anticipación.');
+        }
+    
+        $asignacion->state_id = 1;
+        $asignacion->recycler_id = null;
+        $asignacion->save();
+
+        Mail::to($asignacion->hogar->email)->send(new SolicitudCancelada($asignacion, $reciclador));
+        Mail::to($asignacion->reciclador->email)->send(new SolicitudCancelada($asignacion, $reciclador));
+        return redirect()->route('hogar.recoleccionesAprobadas')->with('success', 'La recolección fue cancelada exitosamente.');
+    }
+
+    public function cancelarFinalR($id)
+    {
+        $asignacion = Assignment::findOrFail($id);
+        $reciclador = $asignacion->reciclador; 
+
+        $horasFaltantes = Carbon::now()->diffInHours(Carbon::parse($asignacion->assignment_date), false);
+    
+        if ($horasFaltantes <= 3) {
+            return redirect()->back()->with('error', 'Solo puedes cancelar una recolección con más de 3 horas de anticipación.');
+        }
+
+        $asignacion->state_id = 1;
+        $asignacion->recycler_id = null;
+        $asignacion->save();
+        Mail::to($asignacion->hogar->email)->send(new SolicitudCancelada($asignacion, $reciclador));
+        Mail::to($asignacion->reciclador->email)->send(new SolicitudCancelada($asignacion, $reciclador));
+        return redirect()->route('reciclador.recoleccionesAprobadas')->with('success', 'La recolección fue cancelada exitosamente.');
+    }
 }

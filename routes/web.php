@@ -52,7 +52,8 @@ Route::middleware(['web'])->group(function () {
         Route::post('/hogar/recoleccionesAprobadas/{id}/calificar', [RecoleccionesController::class, 'calificar'])->name('recolecciones.calificar');
         Route::post('/hogar/recoleccionesAprobadas/{id}/finalizar', [RecoleccionesController::class, 'finalizar'])->name('recolecciones.finalizar');
 
-        Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'finalizadas'])->name('hogar.recoleccionesFinalizadas');   
+        Route::post('/recolecciones/{id}/cancelarFinal', [SolicitudController::class, 'cancelarFinal'])->name('recolecciones.cancelarFinal');
+        Route::get('/recoleccionesFinalizadas', [RecoleccionesController::class, 'recoleccionesfinalizadas'])->name('hogar.recoleccionesFinalizadas');   
 
         Route::get('/bonificacion', [BonificacionController::class, 'index'])->name('hogar.bonificacion');
         Route::post('/bonificaciones/canjear/{id}', [BonificacionController::class, 'canjear'])->name('bonificacion.canjear');
@@ -73,6 +74,7 @@ Route::middleware(['web'])->group(function () {
 
         Route::get('/reciclador/recoleccionesAceptadas', [SolicitudController::class, 'misSolicitudesAceptadas'])->name('reciclador.recoleccionesAceptadas');
         Route::put('/reciclador/cancelar-solicitud/{id}', [SolicitudController::class, 'cancelarSolicitud'])->name('reciclador.cancelar.solicitud');
+        Route::post('/recolecciones/{id}/cancelarFinalR', [SolicitudController::class, 'cancelarFinalR'])->name('recolecciones.cancelarFinalR');
 
         Route::get('/reciclador/recoleccionesAprobadas', [RecoleccionesController::class, 'recoleccionesAprobadasR'])->name('reciclador.recoleccionesAprobadas');
 

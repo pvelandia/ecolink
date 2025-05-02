@@ -91,7 +91,7 @@
                     <input type="file" name="image" class="form-control" accept="image/*">
                     
                     @if($cupon->image)
-                        <img src="{{ asset('storage/' . $cupon->image) }}" alt="Imagen actual del cupón" class="img-preview mt-2">
+                        <img src="{{ asset('storage/cupones/' . $cupon->image) }}" alt="Imagen actual del cupón" class="img-preview mt-2">
                     @else
                         <small class="text-muted">No hay imagen cargada actualmente.</small>
                     @endif

@@ -98,7 +98,7 @@
                                 @method('PUT')
                                 <button type="submit" class="btn btn-success btn-lg w-100">Aprobar</button>
                             </form>
-
+                            
                             <form 
                                 action="{{ route('hogar.solicitudes.rechazar', $solicitud->id) }}" 
                                 method="POST" 

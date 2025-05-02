@@ -44,12 +44,18 @@
         color: black;
         text-align: center;
         margin-bottom: 1.5rem;
+        text-transform: uppercase; 
     }
 </style>
 
 <div class="container mt-4">
     <div class="banner">
-        <h1 style="font-size: 2.3em; margin-top: 0; margin-bottom: 0;">Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}, este es tu menú 📆</h1>
+        <h1 style="border: 2px solid red; padding: 10px; border-radius: 5px; display: inline-block;">
+            Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+        </h1>
+        <div style="font-size: 0.8em; margin-top: 5px; color: #555;">
+            ¡Eres un@ gran Administrador@!
+        </div>
     </div>
     <div class="grid-menu">
         <a href="{{ route('admin.usuarios') }}" class="btn btn-cuadrado">

@@ -69,13 +69,16 @@
         }
     }
 </style>
-
 <div class="container mt-4">
     <div class="banner">
-        <h1>Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }} - Estadísticas de Recolección</h1>
+        <h1 style="border: 2px solid green; padding: 10px; border-radius: 5px; display: inline-block;">
+            Bienvenid@ {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+        </h1>
+        <div style="font-size: 0.8em; margin-top: 5px; color: #555;">
+            ¡Eres un@ gran Recolector@!
+        </div>
     </div>
     
-    <!-- Botones -->
     <div class="grid-menu">
         <a href="{{ route('reciclador.solicitudes') }}" class="btn btn-cuadrado">
             <img src="{{ asset('https://cdn-icons-png.flaticon.com/512/8921/8921043.png') }}" alt="Solicitudes Disponibles">
