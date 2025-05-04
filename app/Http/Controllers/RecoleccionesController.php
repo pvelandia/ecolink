@@ -124,7 +124,7 @@ class RecoleccionesController extends Controller
             ->sum('assignment_materials.quantity');
     
         $kgPorArbol = 1000; // 1 tonelada = 1000 kg
-        $arbolesSalvados = round($totalKgReciclados / $kgPorArbol, 2);
+        $arbolesSalvados = round($totalKgReciclados / $kgPorArbol, 5);
     
         return view('hogar.recoleccionesFinalizadas', compact('recolecciones', 'totalKgReciclados', 'arbolesSalvados', 'materialesReciclados'));
     }

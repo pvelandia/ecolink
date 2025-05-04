@@ -121,7 +121,21 @@
             </div>
         </div>
     </div>
+    </br>
+</br>
+    <div class="mt-10 text-center">
+        <h2 class="text-xl font-semibold text-red-700 mb-2">¿Tienes algún inconveniente?</h2>
+        <p class="text-gray-700 mb-4">Si deseas reportar un problema con la plataforma o con un usuario, por favor comunícate con el administrador:</p>
 
+        <div class="space-y-2 mt-6 bg-black text-white p-6 rounded-lg shadow-lg">
+            <a href="tel:+573222889715" class="inline-block px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-green-700 transition no-underline">
+                📞 +57 322 2889715
+            </a>
+            <br>
+            <a href="mailto:ecolink.reciclaje.25@gmail.com" class="inline-block px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition no-underline">
+                📧 ecolink.reciclaje.25@gmail.com
+            </a>
+        </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

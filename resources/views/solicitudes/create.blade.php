@@ -47,9 +47,11 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Cantidad (kg)</label>
-                            <input type="number" step="0.1" name="materials[0][quantity]" class="form-control" value="{{ old('materials.0.quantity') }}" required>
-                        </div>
+    <label class="form-label">Cantidad (kg)</label>
+    <input type="number" step="0.1" name="materials[0][quantity]" class="form-control" value="{{ old('materials.0.quantity') }}" required>
+    <div id="error-message" style="color: red; display: none;">Por favor, usa un punto (.) como separador decimal.</div>
+</div>
+
                         <div class="col-md-2 d-flex align-items-end justify-content-center">
                             <button type="button" class="btn btn-outline-danger btn-sm remove-material" title="Eliminar material">
                                 <i class="bi bi-x-circle fs-5"></i>
@@ -73,10 +75,7 @@
                     <input type="text" name="address_part2" class="form-control " value="{{ old('address_part2') }}" required>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-info-circle"></i> Indicación adicional (opcional)</label>
-                    <input type="text" name="address_part3" class="form-control" value="{{ old('address_part3') }}">
-                </div>
+             
 
                 <div class="mb-3">
                     <label class="form-label"><i class="bi bi-calendar-event"></i> Fecha y hora de recolección</label>
@@ -122,4 +121,23 @@
         }
     });
 </script>
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        let quantityInput = document.querySelector('input[name="materials[0][quantity]"]');
+        let quantityValue = quantityInput.value;
+
+        // Verificar si hay coma en el valor
+        if (quantityValue.includes(',')) {
+            // Mostrar el mensaje de error
+            document.getElementById('error-message').style.display = 'block';
+
+            // Evitar el envío del formulario hasta corregirlo
+            event.preventDefault();
+        } else {
+            // Si no hay coma, lo convierte automáticamente en un punto, si es necesario
+            quantityInput.value = quantityValue.replace(',', '.');
+        }
+    });
+</script>
+
 @endsection

@@ -51,7 +51,7 @@
                 <div class="col-md-6">
                     <div class="card p-4">
                         <h4><strong>Solicitud #{{ $asignacion->id }}</strong></h4>
-                        <p><span class="info-label">Dirección:</span> {{ $asignacion->hogar->address ?? 'Ninguna' }}</p>
+                        <p><span class="info-label">Dirección:</span> {{ $asignacion->address ?? 'Ninguna' }}</p>
                         <p><span class="info-label">Estado:</span> Aceptada</p>
                         <p><span class="info-label">Solicitante (Hogar):</span> {{ $asignacion->hogar->first_name }} {{ $asignacion->hogar->last_name }}</p>
 

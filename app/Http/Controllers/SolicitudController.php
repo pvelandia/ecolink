@@ -9,6 +9,7 @@ use App\Models\AssignmentMaterial;
 use App\Mail\SolicitudAprobada;
 use App\Mail\SolicitudCancelada;
 
+
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ class SolicitudController extends Controller
         $request->validate([
             'materials' => 'required|array',
             'materials.*.material_id' => 'required|exists:materials,id',
-            'materials.*.quantity' => 'required|numeric|min:0.1|max:100', // máximo 100kg
+            'materials.*.quantity' => 'required|numeric|min:0.01|max:100', // máximo 100kg
             'collection_date' => [
                 'required',
                 'date',
