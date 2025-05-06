@@ -72,22 +72,33 @@
                     @endforeach
                 </ul>
 
+                @php
+                    $fechaHoraActual = now();
+                    $fechaHoraRecoleccion = Carbon::parse($recoleccion->assignment_date);
+                    $habilitado = $fechaHoraActual->greaterThanOrEqualTo($fechaHoraRecoleccion);
+                @endphp
+
                 <form action="{{ route('recolecciones.finalizar', $recoleccion->id) }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label for="calificacion" class="info-label">Calificación:</label>
-                        <div class="star-rating d-flex gap-2">
+                        <div class="star-rating d-flex gap-2 {{ $habilitado ? '' : 'disabled' }}">
                             @for ($i = 1; $i <= 5; $i++)
                                 <i class="bi bi-star" data-value="{{ $i }}"></i>
                             @endfor
                         </div>
-                        <input type="hidden" name="calificacion" id="calificacion-input" required>
+                        <input type="hidden" name="calificacion" id="calificacion-input" required {{ $habilitado ? '' : 'disabled' }}>
                         @if ($errors->has('calificacion'))
                             <div class="text-danger mt-2">{{ $errors->first('calificacion') }}</div>
                         @endif
                     </div>
-                    <button type="submit" class="btn btn-success btn-lg w-100">Finalizar y Calificar</button>
+                    {{-- Habilitar el botón solo si la fecha y hora actual es posterior a la fecha y hora de la recolección --}}
+                    <button type="submit" class="btn btn-success btn-lg w-100" 
+                        {{ $habilitado ? '' : 'disabled' }}>
+                        Finalizar y Calificar
+                    </button>
                 </form>
+
                 @php
                     $horasRestantes = Carbon::parse($recoleccion->assignment_date)->diffInHours(now(), false);
                 @endphp
@@ -115,26 +126,32 @@
         const stars = container.querySelectorAll('i');
         const input = container.closest('form').querySelector('input[name="calificacion"]');
 
-        stars.forEach(star => {
-            star.addEventListener('mouseover', () => {
-                const value = parseInt(star.getAttribute('data-value'));
-                stars.forEach((s, i) => {
-                    s.classList.toggle('hover', i < value);
+        // Verificar si el contenedor está habilitado
+        if (!container.classList.contains('disabled')) {
+            stars.forEach(star => {
+                // Cambiar el color de las estrellas al pasar el mouse
+                star.addEventListener('mouseover', () => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('hover', i < value);
+                    });
+                });
+
+                // Restaurar el color de las estrellas al salir del mouse
+                star.addEventListener('mouseout', () => {
+                    stars.forEach(s => s.classList.remove('hover'));
+                });
+
+                // Seleccionar la calificación al hacer clic
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    input.value = value; // Asignar el valor seleccionado al input oculto
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('selected', i < value);
+                    });
                 });
             });
-
-            star.addEventListener('mouseout', () => {
-                stars.forEach(s => s.classList.remove('hover'));
-            });
-
-            star.addEventListener('click', () => {
-                const value = parseInt(star.getAttribute('data-value'));
-                input.value = value;
-                stars.forEach((s, i) => {
-                    s.classList.toggle('selected', i < value);
-                });
-            });
-        });
+        }
     });
 </script>
 </body>

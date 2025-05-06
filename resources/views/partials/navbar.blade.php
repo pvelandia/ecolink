@@ -1,11 +1,19 @@
-
 <nav class="navbar navbar-expand-lg" style="background-color: #025939; padding-top: 1rem; padding-bottom: 1rem;">
     <div class="container">
-    {{-- Logo --}}
-    <a class="navbar-brand d-flex align-items-center">
-        <img src="https://i.postimg.cc/3JLLydKZ/Imagen-de-Whats-App-2025-04-14-a-las-08-27-25-b82fdc0e.jpg" alt="EcoLink" width="50" height="50" class="me-2" style="max-width: 60px; max-height: 60px;">
-        <span class="text-white fw-bold d-none d-md-inline" style="font-size: 1.1em;">EcoLink</span>
-    </a>
+        {{-- Logo --}}
+        <a class="navbar-brand d-flex align-items-center" 
+           href="{{ Auth::check() 
+                ? (Auth::user()->role->name === 'Reciclador' 
+                    ? route('reciclador.menu') 
+                    : (Auth::user()->role->name === 'Hogar' 
+                        ? route('hogar.home') 
+                        : (Auth::user()->role->name=== 'Administrador' 
+                            ? route('admin.menu') 
+                            : route('login')))) 
+                : route('login') }}">
+            <img src="https://i.postimg.cc/3JLLydKZ/Imagen-de-Whats-App-2025-04-14-a-las-08-27-25-b82fdc0e.jpg" alt="EcoLink" width="50" height="50" class="me-2" style="max-width: 60px; max-height: 60px;">
+            <span class="text-white fw-bold d-none d-md-inline" style="font-size: 1.1em;">EcoLink</span>
+        </a>
 <style>
     body {
         height: 100%;

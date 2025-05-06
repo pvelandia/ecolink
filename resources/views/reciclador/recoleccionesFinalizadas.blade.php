@@ -46,7 +46,7 @@
                         <th class="text-center">Reciclador</th>
                         <th class="text-center">Materiales Recolectados</th>
                         <th class="text-center">Calificación</th>
-                        <th class="text-center">Puntos</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -88,13 +88,7 @@
                                 </form>
                             @endif
                         </td>
-                        <td class="text-center">
-                            @if($recoleccion->points)
-                                {{ $recoleccion->points }}
-                            @else
-                                <span class="text-muted">Esperando asignación</span>
-                            @endif
-                        </td>
+                      
                     </tr>
                     @endforeach
                 </tbody>

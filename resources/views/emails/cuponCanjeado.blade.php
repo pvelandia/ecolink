@@ -16,10 +16,12 @@
         <li style="margin-bottom: 10px;"><strong style="color: #388e3c;">⭐ Puntos Usados:</strong> {{ $coupon->points }}</li>
     </ul>
 
-    @if($coupon->image)
+    @if ($coupon->image)
         <div style="text-align: center; margin-top: 15px;">
-            <img src="{{ asset('storage/cupones' . $coupon->image) }}" alt="Imagen del cupón" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <img src="{{ asset('storage/cupones/' . $coupon->image) }}" alt="Imagen del cupón" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
         </div>
+    @else
+        <p style="text-align: center; color: #888;">No hay imagen disponible para este cupón.</p>
     @endif
 
     <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">

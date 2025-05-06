@@ -41,8 +41,14 @@ class SolicitudController extends Controller
                 function ($attribute, $value, $fail) {
                     $selectedDate = Carbon::parse($value);
                     $minDate = Carbon::now()->addDay(); // mínimo un día después
+                    $maxDate = Carbon::now()->addMonths(1); // máximo 6 meses después
+
                     if ($selectedDate->lt($minDate)) {
                         $fail('La recolección debe solicitarse con al menos un día de anticipación.');
+                    }
+
+                    if ($selectedDate->gt($maxDate)) {
+                        $fail('La fecha de recolección no puede ser mayor a 1 mes desde hoy.');
                     }
                 },
             ],
@@ -77,7 +83,7 @@ class SolicitudController extends Controller
             ]);
         }
 
-        // Redirigir con ,+mensaje de éxito
+        // Redirigir con mensaje de éxito
         return redirect()->route('solicitudes.create')->with('success', '¡Recolección solicitada correctamente!');
     }
 

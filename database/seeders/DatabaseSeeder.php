@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             Coupon::class,
             Materials::class,
             Roles::class,
-            States::class,
+            StatesSeeder::class,
         ]);
     }
 }
